@@ -6,17 +6,17 @@
 
 <!-- 成功・エラーメッセージ表示 -->
 {% if success %}
-  <p>{{ message }}</p>
+  <p role="status">{{ message }}</p>
 {% endif %}
 
 {% if error %}
-  <p>{{ message }}</p>
+  <p role="alert">{{ message }}</p>
 {% endif %}
 
 <form method="POST">
   <p>
     <label for="name">避難所名（必須）</label><br>
-    <input type="text" id="name" name="name">
+    <input type="text" id="name" name="name" required>
   </p>
   <p><button type="submit">登録</button></p>
 </form>

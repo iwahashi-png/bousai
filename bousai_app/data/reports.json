@@ -1,0 +1,132 @@
+[
+  {
+    "id": 1006,
+    "occurred_at": "2026-09-29T09:20",
+    "response_location_type": "道路",
+    "location": "青森市長島二丁目",
+    "disaster_type": "道路冠水",
+    "situation": "交差点の一部が冠水し、車両が徐行しています。",
+    "reporter": "匿名住民",
+    "source": "住民アプリ",
+    "details": "道路の低い場所に水がたまっています。歩行者は歩道側を通行しています。",
+    "cause": "強い雨が続き、排水が追いついていない可能性があります。",
+    "photo_available": false,
+    "response_status": "未対応",
+    "response_history": []
+  },
+  {
+    "id": 1005,
+    "occurred_at": "2026-09-29T09:05",
+    "response_location_type": "河川",
+    "location": "青森市堤川・橋本付近",
+    "disaster_type": "河川水位上昇",
+    "situation": "水位が上昇しています。現地の状況確認が必要です。",
+    "reporter": "匿名住民",
+    "source": "電話受付",
+    "details": "橋の上から見て、平常時より水位が高く見えるとの通報です。",
+    "cause": "上流域の降雨による水位上昇が考えられます。",
+    "photo_available": true,
+    "response_status": "対応中",
+    "response_history": [
+      {
+        "status": "対応中",
+        "comment": "現地の水位確認について河川担当へ指示する方向で検討中です。",
+        "changed_at": "2026年09月29日 09:18",
+        "changed_by": "防災課"
+      }
+    ]
+  },
+  {
+    "id": 1004,
+    "occurred_at": "2026-09-29T08:42",
+    "response_location_type": "避難所",
+    "location": "青森市立中央小学校",
+    "disaster_type": "施設設備の不具合",
+    "situation": "正面入口の自動扉が開閉しません。",
+    "reporter": "施設職員",
+    "source": "電話受付",
+    "details": "現在は職員が手動で開閉しています。避難者の出入りに支障が出る可能性があります。",
+    "cause": "設備故障の原因は確認中です。",
+    "photo_available": false,
+    "response_status": "対応済み",
+    "response_history": [
+      {
+        "status": "対応中",
+        "comment": "施設管理者へ設備確認を依頼しました。",
+        "changed_at": "2026年09月29日 08:55",
+        "changed_by": "防災課"
+      },
+      {
+        "status": "対応済み",
+        "comment": "施設職員へ手動開閉での運用を指示しました。",
+        "changed_at": "2026年09月29日 09:10",
+        "changed_by": "防災課"
+      }
+    ]
+  },
+  {
+    "id": 1003,
+    "occurred_at": "2026-09-28T18:10",
+    "response_location_type": "道路",
+    "location": "青森市新町一丁目",
+    "disaster_type": "倒木",
+    "situation": "倒木が歩道をふさいでいます。車道への影響はありません。",
+    "reporter": "匿名住民",
+    "source": "住民アプリ",
+    "details": "通行人が歩道を迂回しています。",
+    "cause": "強風の影響が考えられます。",
+    "photo_available": true,
+    "response_status": "未対応",
+    "response_history": []
+  },
+  {
+    "id": 1002,
+    "occurred_at": "2026-09-28T16:35",
+    "response_location_type": "河川",
+    "location": "青森市沖館川・沖館橋付近",
+    "disaster_type": "河川の濁り",
+    "situation": "水が濁っているとの報告がありました。",
+    "reporter": "匿名住民",
+    "source": "住民アプリ",
+    "details": "水面に目立った漂流物は見られないとのことです。",
+    "cause": "降雨後の土砂流入の可能性があります。",
+    "photo_available": true,
+    "response_status": "対応済み",
+    "response_history": [
+      {
+        "status": "対応中",
+        "comment": "現地の状況を道路担当へ共有しました。",
+        "changed_at": "2026年09月28日 16:48",
+        "changed_by": "防災課"
+      },
+      {
+        "status": "対応済み",
+        "comment": "現地確認の結果、経過観察とするよう指示しました。",
+        "changed_at": "2026年09月28日 17:05",
+        "changed_by": "防災課"
+      }
+    ]
+  },
+  {
+    "id": 1001,
+    "occurred_at": "2026-09-28T14:12",
+    "response_location_type": "避難所",
+    "location": "青森市立浪岡北小学校",
+    "disaster_type": "停電",
+    "situation": "校舎の一部で電気が使えません。",
+    "reporter": "施設職員",
+    "source": "電話受付",
+    "details": "非常灯は点灯しています。原因と復旧見込みは確認中です。",
+    "cause": "原因は確認中です。",
+    "photo_available": false,
+    "response_status": "対応中",
+    "response_history": [
+      {
+        "status": "対応中",
+        "comment": "電源設備の確認を施設担当へ依頼しています。",
+        "changed_at": "2026年09月28日 14:30",
+        "changed_by": "防災課"
+      }
+    ]
+  }
+]

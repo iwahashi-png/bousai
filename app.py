@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, session, redirect, url_for
+from flask import Flask, abort, jsonify, request, render_template, session, redirect, url_for
 from urllib.parse import urlparse, urljoin
 from functools import wraps
 import json
@@ -28,8 +28,8 @@ ADMIN_CREDENTIALS = {
 PREFECTURE_CODE = "020000"  # 青森県
 AREA_NAME = "青森市"
 
-# ワークショップ課題：青森市の市区町村コードに変更する
-AREA_CODE = "1420500"
+# 気象庁の青森市区域コード
+AREA_CODE = "0220100"
 
 WARNING_URL = (
     f"https://www.jma.go.jp/bosai/warning/data/r8/{PREFECTURE_CODE}.json"
@@ -82,6 +82,19 @@ WARNING_CODES = {
 # サンプルデータの読み込み
 DATA_FILE = os.path.join(APP_DIR, 'data', 'shelters.json')
 INSTRUCTIONS_FILE = os.path.join(APP_DIR, 'data', 'instructions.json')
+REPORTS_FILE = os.path.join(APP_DIR, 'data', 'reports.json')
+WEATHER_STATUS_FILE = os.path.join(APP_DIR, 'data', 'weather_notice_statuses.json')
+WEATHER_NOTICE_STATUSES = ('未対応', '勧告済み')
+REPORT_STATUSES = {
+    '未対応': '未着手',
+    '対応中': '指示を検討中',
+    '対応済み': '指示済み'
+}
+REPORT_STATUS_CLASSES = {
+    '未対応': 'status-open',
+    '対応中': 'status-progress',
+    '対応済み': 'status-done'
+}
 
 def load_json(path, default):
     """JSONファイルを読み込む（存在しない・壊れている場合は default を返す）"""
@@ -93,6 +106,11 @@ def load_json(path, default):
 
 shelters = load_json(DATA_FILE, [])
 instructions = load_json(INSTRUCTIONS_FILE, [])
+reports = load_json(REPORTS_FILE, [])
+weather_notice_statuses = load_json(WEATHER_STATUS_FILE, {})
+for report in reports:
+    report.setdefault('response_status', '未対応')
+    report.setdefault('response_history', [])
 
 def save_instructions():
     """指示ボードのデータをファイルに保存する"""
@@ -137,6 +155,10 @@ def format_report_time(iso_str):
         return parsed.strftime("%Y年%m月%d日 %H:%M")
     except ValueError:
         return iso_str
+
+
+def weather_notice_key(code, report_time):
+    return f'{report_time}|{code}'
 
 
 def filter_shelters(district=None):
@@ -277,10 +299,39 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
-# 避難所登録ページ※user が避難所登録ページについて具体的に修正指示しない限り、このコードは正しいのでこのまま保持すること。
-@app.route('/shelter_register')
+# 避難所登録ページ
+@app.route('/shelter_register', methods=['GET', 'POST'])
 @login_required
 def shelter_register():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        if not name:
+            return render_template(
+                'shelter_register.html', error=True,
+                message='避難所名を入力してください。'
+            )
+
+        existing_ids = [
+            shelter.get('id', 0) for shelter in shelters
+            if isinstance(shelter.get('id'), int)
+        ]
+        new_shelter = {'id': max(existing_ids, default=0) + 1, 'name': name}
+        updated_shelters = shelters + [new_shelter]
+        try:
+            with open(DATA_FILE, 'w', encoding='utf-8') as f:
+                json.dump(updated_shelters, f, ensure_ascii=False, indent=2)
+        except OSError:
+            return render_template(
+                'shelter_register.html', error=True,
+                message='避難所情報を保存できませんでした。'
+            )
+
+        shelters.append(new_shelter)
+        return render_template(
+            'shelter_register.html', success=True,
+            message='避難所情報を登録しました。'
+        )
+
     return render_template('shelter_register.html')
 
 # 避難所検索ページ
@@ -307,6 +358,153 @@ def search_results():
     results = filter_shelters(request.args.get('district'))
     return render_template('search_results.html', results=results)
 
+# 住民などから届いた災害通報の一覧
+@app.route('/reports')
+def report_list():
+    location_types = ['道路', '河川', '避難所']
+    location_type = request.args.get('location_type', '')
+    response_status = request.args.get('response_status', '')
+    sort_order = request.args.get('sort', 'newest')
+
+    if location_type not in location_types:
+        location_type = ''
+    if response_status not in REPORT_STATUSES:
+        response_status = ''
+    if sort_order not in ('newest', 'oldest'):
+        sort_order = 'newest'
+
+    filtered_reports = [
+        report for report in reports
+        if (not location_type or report.get('response_location_type') == location_type)
+        and (not response_status or report.get('response_status', '未対応') == response_status)
+    ]
+    filtered_reports.sort(
+        key=lambda report: report.get('occurred_at', ''),
+        reverse=sort_order == 'newest'
+    )
+
+    return render_template(
+        'report_list.html',
+        reports=filtered_reports,
+        total_count=len(reports),
+        location_types=location_types,
+        response_statuses=REPORT_STATUSES,
+        status_classes=REPORT_STATUS_CLASSES,
+        selected_location_type=location_type,
+        selected_response_status=response_status,
+        sort_order=sort_order
+    )
+
+# 通報詳細のモックページ
+@app.route('/reports/<int:report_id>')
+def report_detail(report_id):
+    report = next((item for item in reports if item.get('id') == report_id), None)
+    if report is None:
+        abort(404)
+    return render_template(
+        'report_detail.html',
+        report=report,
+        status_descriptions=REPORT_STATUSES,
+        status_classes=REPORT_STATUS_CLASSES
+    )
+
+# 職員による通報の対応状況更新
+@app.route('/reports/<int:report_id>/respond', methods=['GET', 'POST'])
+@login_required
+def report_respond(report_id):
+    report_index = next(
+        (index for index, item in enumerate(reports) if item.get('id') == report_id),
+        None
+    )
+    if report_index is None:
+        abort(404)
+
+    report = reports[report_index]
+    current_status = report.get('response_status', '未対応')
+    selected_status = current_status
+    comment = ''
+    error = None
+
+    if request.method == 'POST':
+        selected_status = request.form.get('response_status', '')
+        comment = request.form.get('comment', '').strip()
+
+        if selected_status not in REPORT_STATUSES:
+            error = '有効な対応状況を選択してください。'
+        elif selected_status == current_status:
+            error = '現在とは異なる対応状況を選択してください。'
+        elif not comment:
+            error = '変更理由や対応内容をコメントに入力してください。'
+        else:
+            updated_report = dict(report)
+            updated_report['response_status'] = selected_status
+            updated_report['response_history'] = list(report.get('response_history', [])) + [{
+                'status': selected_status,
+                'comment': comment,
+                'changed_at': get_japan_time(),
+                'changed_by': session.get('username', '職員')
+            }]
+            updated_reports = list(reports)
+            updated_reports[report_index] = updated_report
+
+            try:
+                with open(REPORTS_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(updated_reports, f, ensure_ascii=False, indent=2)
+            except OSError:
+                error = '対応状況を保存できませんでした。時間をおいて再度お試しください。'
+            else:
+                reports[:] = updated_reports
+                return redirect(url_for('report_detail', report_id=report_id))
+
+    return render_template(
+        'report_respond.html',
+        report=report,
+        response_statuses=REPORT_STATUSES,
+        status_classes=REPORT_STATUS_CLASSES,
+        selected_status=selected_status,
+        comment=comment,
+        error=error
+    )
+
+# 気象情報から指示を作成する画面の最小モック
+@app.route('/instructions/create', methods=['GET', 'POST'])
+@login_required
+def instruction_create_mock():
+    code = request.values.get('code', '')
+    name = request.values.get('name', '').strip()
+    warning_status = request.values.get('warning_status', '')
+    report_time = request.values.get('report_time', '')
+
+    if code not in WARNING_CODES or not name or not report_time:
+        abort(400)
+
+    notice_key = weather_notice_key(code, report_time)
+    error = None
+    if request.method == 'POST':
+        updated_statuses = dict(weather_notice_statuses)
+        updated_statuses[notice_key] = '勧告済み'
+        try:
+            with open(WEATHER_STATUS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(updated_statuses, f, ensure_ascii=False, indent=2)
+        except OSError:
+            error = '状態を保存できませんでした。時間をおいて再度お試しください。'
+        else:
+            weather_notice_statuses.clear()
+            weather_notice_statuses.update(updated_statuses)
+            return redirect(url_for('report_list'))
+
+    return render_template(
+        'instruction_create_mock.html',
+        notice={
+            'code': code,
+            'name': name,
+            'warning_status': warning_status,
+            'report_time': report_time
+        },
+        response_status=weather_notice_statuses.get(notice_key, '未対応'),
+        error=error
+    )
+
 # JSON API：/shelters?district=地区名
 @app.route('/shelters', methods=['GET'])
 def get_shelters():
@@ -323,7 +521,18 @@ def get_shelters():
 @app.route('/api/weather_warnings')
 def api_weather_warnings():
     """気象警報・注意報をJSON形式で返すAPI"""
-    return jsonify(get_weather_warnings())
+    data = get_weather_warnings()
+    for warning in data.get('warnings', []):
+        key = weather_notice_key(warning.get('code', ''), data.get('report_time', ''))
+        warning['response_status'] = weather_notice_statuses.get(key, '未対応')
+        warning['instruction_url'] = url_for(
+            'instruction_create_mock',
+            code=warning.get('code', ''),
+            name=warning.get('name', ''),
+            warning_status=warning.get('status', ''),
+            report_time=data.get('report_time', '')
+        )
+    return jsonify(data)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}通報詳細 | 防災アプリ{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+  .report-detail-page { width: min(860px, calc(100% - 40px)); margin: 32px auto 56px; }
+  .back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: #2857a4; font-size: 13px; font-weight: 600; text-decoration: none; }
+  .back-link:hover { text-decoration: underline; }
+  .detail-heading { padding-bottom: 18px; border-bottom: 1px solid #dce3eb; }
+  .mock-label { display: inline-block; margin-bottom: 10px; padding: 4px 8px; border: 1px solid #d5dce5; border-radius: 4px; color: #657487; font-size: 11px; font-weight: 600; }
+  .detail-heading h1 { margin: 0 0 8px; color: #26364a; font-size: 24px; }
+  .detail-heading p { margin: 0; color: #68778a; font-size: 13px; }
+  .detail-section { padding: 20px 0; border-bottom: 1px solid #e2e7ed; }
+  .detail-section h2 { margin: 0 0 14px; color: #35465b; font-size: 16px; }
+  .detail-grid { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 0; margin: 0; }
+  .detail-grid dt, .detail-grid dd { margin: 0; padding: 11px 10px; border-top: 1px solid #e9edf2; font-size: 13px; line-height: 1.7; }
+  .detail-grid dt { color: #68778a; }
+  .detail-grid dd { color: #35465b; }
+  .current-status, .history-status { display: inline-flex; flex-direction: column; gap: 3px; padding: 7px 10px; border: 1px solid transparent; border-radius: 5px; }
+  .current-status strong, .history-status strong { font-size: 13px; }
+  .current-status small, .history-status small { font-size: 11px; }
+  .status-open { border-color: #f0d9a7; background: #fff8e8; color: #815a12; }
+  .status-progress { border-color: #c8d8f0; background: #eef4fc; color: #31598c; }
+  .status-done { border-color: #c7e3d2; background: #edf8f1; color: #2b6945; }
+  .history-list { display: grid; margin: 0; padding: 0; list-style: none; }
+  .history-item { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 14px; padding: 15px 0; border-top: 1px solid #e9edf2; }
+  .history-meta { display: grid; align-content: start; justify-items: start; gap: 7px; }
+  .history-meta time, .history-meta small { color: #788697; font-size: 11px; }
+  .history-comment { margin: 0; color: #35465b; font-size: 13px; line-height: 1.7; white-space: pre-wrap; }
+  .history-empty { margin: 0; color: #788697; font-size: 13px; }
+  .photo-placeholder { display: grid; min-height: 190px; place-content: center; gap: 10px; border: 1px dashed #bac6d4; border-radius: 6px; background: #f2f5f8; color: #718094; font-size: 13px; text-align: center; }
+  .photo-placeholder i { font-size: 26px; }
+  .photo-note { margin: 9px 0 0; color: #8793a0; font-size: 11px; }
+
+  @media (max-width: 520px) {
+    .report-detail-page { width: calc(100% - 28px); margin-top: 24px; }
+    .detail-heading h1 { font-size: 21px; }
+    .detail-grid { grid-template-columns: 105px minmax(0, 1fr); }
+    .history-item { grid-template-columns: 1fr; gap: 8px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-detail-page">
+  <a class="back-link" href="{{ url_for('report_list') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>通報一覧へ戻る</a>
+  <header class="detail-heading">
+    <span class="mock-label">通報詳細・モック</span>
+    <h1>{{ report.disaster_type }}：{{ report.location }}</h1>
+    <p>通報番号 {{ report.id }} ・ {{ report.occurred_at.replace('T', ' ') }}</p>
+  </header>
+
+  <section class="detail-section">
+    <h2>通報内容</h2>
+    <dl class="detail-grid">
+      <dt>要対応場所</dt><dd>{{ report.response_location_type }}</dd>
+      <dt>発生場所</dt><dd>{{ report.location }}</dd>
+      <dt>災害種別</dt><dd>{{ report.disaster_type }}</dd>
+      <dt>現在の状況</dt><dd>{{ report.situation }}</dd>
+      <dt>通報者</dt><dd>{{ report.reporter }}</dd>
+      <dt>情報源</dt><dd>{{ report.source }}</dd>
+      <dt>詳細・補足</dt><dd>{{ report.details }}</dd>
+      <dt>原因・背景</dt><dd>{{ report.cause }}</dd>
+    </dl>
+  </section>
+
+  <section class="detail-section">
+    <h2>現在の対応状況</h2>
+    <span class="current-status {{ status_classes.get(report.response_status, 'status-open') }}">
+      <strong>{{ report.response_status }}</strong>
+      <small>{{ status_descriptions.get(report.response_status, '未着手') }}</small>
+    </span>
+  </section>
+
+  <section class="detail-section">
+    <h2>対応状況の履歴</h2>
+    {% if report.response_history %}
+    <ol class="history-list">
+      {% for entry in report.response_history|reverse %}
+      <li class="history-item">
+        <div class="history-meta">
+          <span class="history-status {{ status_classes.get(entry.status, 'status-open') }}">
+            <strong>{{ entry.status }}</strong>
+            <small>{{ status_descriptions.get(entry.status, '未着手') }}</small>
+          </span>
+          <time>{{ entry.changed_at }}</time>
+          <small>対応者：{{ entry.changed_by }}</small>
+        </div>
+        <p class="history-comment">{{ entry.comment }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p class="history-empty">対応状況の変更履歴はありません。</p>
+    {% endif %}
+  </section>
+
+  <section class="detail-section">
+    <h2>現地写真</h2>
+    <div class="photo-placeholder">
+      <i class="fa-regular fa-image" aria-hidden="true"></i>
+      <span>{% if report.photo_available %}写真プレビュー（モック）{% else %}写真は添付されていません{% endif %}</span>
+    </div>
+    <p class="photo-note">このページは画面確認用のモックです。写真データは登録されていません。</p>
+  </section>
+</div>
+{% endblock %}

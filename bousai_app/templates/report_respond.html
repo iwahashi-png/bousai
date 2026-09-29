@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}通報への対応 | 防災アプリ{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+  .respond-page { width: min(760px, calc(100% - 40px)); margin: 32px auto 56px; }
+  .back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: #2857a4; font-size: 13px; font-weight: 600; text-decoration: none; }
+  .back-link:hover { text-decoration: underline; }
+  .respond-heading { padding-bottom: 18px; border-bottom: 1px solid #dce3eb; }
+  .respond-heading h1 { margin: 0 0 8px; color: #26364a; font-size: 24px; }
+  .respond-heading p { margin: 0; color: #68778a; font-size: 13px; }
+  .current-summary { display: flex; align-items: center; gap: 12px; margin: 20px 0; padding: 14px; border: 1px solid #e1e7ed; border-radius: 6px; background: #f5f7f9; }
+  .current-summary > span:first-child { color: #68778a; font-size: 13px; }
+  .status-badge { display: inline-flex; flex-direction: column; gap: 2px; padding: 5px 8px; border: 1px solid transparent; border-radius: 5px; }
+  .status-badge strong { font-size: 12px; }
+  .status-badge small { font-size: 10px; }
+  .status-open { border-color: #f0d9a7; background: #fff8e8; color: #815a12; }
+  .status-progress { border-color: #c8d8f0; background: #eef4fc; color: #31598c; }
+  .status-done { border-color: #c7e3d2; background: #edf8f1; color: #2b6945; }
+  .respond-form { display: grid; gap: 18px; padding: 22px 0; border-top: 1px solid #e2e7ed; border-bottom: 1px solid #e2e7ed; }
+  .form-field { display: grid; gap: 7px; }
+  .form-field label { color: #46576a; font-size: 13px; font-weight: 600; }
+  .form-field label span { margin-left: 5px; color: #a1463c; font-size: 11px; }
+  .form-field select,
+  .form-field textarea { width: 100%; padding: 10px 11px; border: 1px solid #cbd4df; border-radius: 5px; background: #fff; color: #35465b; font: inherit; font-size: 14px; }
+  .form-field select { min-height: 42px; }
+  .form-field textarea { min-height: 132px; resize: vertical; line-height: 1.7; }
+  .form-error { padding: 10px 12px; border-left: 3px solid #b34e43; background: #fff3f1; color: #8e372f; font-size: 13px; }
+  .form-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .save-button,
+  .cancel-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 15px; border: 1px solid #2857a4; border-radius: 5px; font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; }
+  .save-button { background: #2857a4; color: #fff; }
+  .save-button:hover { background: #204986; }
+  .cancel-link { border-color: #cbd4df; background: #fff; color: #42536a; }
+  .cancel-link:hover { background: #f1f4f7; }
+
+  @media (max-width: 520px) {
+    .respond-page { width: calc(100% - 28px); margin-top: 24px; }
+    .respond-heading h1 { font-size: 21px; }
+    .form-actions > * { width: 100%; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="respond-page">
+  <a class="back-link" href="{{ url_for('report_detail', report_id=report.id) }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>通報詳細へ戻る</a>
+  <header class="respond-heading">
+    <h1>通報への対応</h1>
+    <p>{{ report.disaster_type }}：{{ report.location }}（通報番号 {{ report.id }}）</p>
+  </header>
+
+  <div class="current-summary">
+    <span>現在の対応状況</span>
+    <span class="status-badge {{ status_classes.get(report.response_status, 'status-open') }}">
+      <strong>{{ report.response_status }}</strong>
+      <small>{{ response_statuses.get(report.response_status, '未着手') }}</small>
+    </span>
+  </div>
+
+  <form class="respond-form" method="post">
+    {% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
+    <div class="form-field">
+      <label for="response-status">変更後の対応状況<span>必須</span></label>
+      <select id="response-status" name="response_status" required>
+        {% for status, description in response_statuses.items() %}
+        <option value="{{ status }}" {% if selected_status == status %}selected{% endif %}>{{ status }}：{{ description }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="response-comment">対応コメント<span>必須</span></label>
+      <textarea id="response-comment" name="comment" required maxlength="1000" placeholder="状況を変更する理由や、検討・指示した内容を記入してください。">{{ comment }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="save-button" type="submit"><i class="fa-solid fa-check" aria-hidden="true"></i>状況とコメントを記録</button>
+      <a class="cancel-link" href="{{ url_for('report_detail', report_id=report.id) }}">キャンセル</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

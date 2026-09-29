@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}指示情報作成 | 防災アプリ{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+  .instruction-mock-page { width: min(680px, calc(100% - 36px)); margin: 36px auto 56px; }
+  .back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: #2857a4; font-size: 13px; font-weight: 600; text-decoration: none; }
+  .mock-content { padding: 22px; border: 1px solid #e1e7ed; border-radius: 7px; background: #fff; }
+  .mock-label { display: inline-block; margin-bottom: 12px; padding: 4px 8px; border: 1px solid #d5dce5; border-radius: 4px; color: #657487; font-size: 11px; font-weight: 600; }
+  .mock-content h1 { margin: 0 0 18px; color: #26364a; font-size: 22px; }
+  .notice-summary { display: grid; gap: 8px; margin-bottom: 20px; padding: 14px; border-left: 4px solid #bf5146; background: #fff8f6; }
+  .notice-summary strong { color: #35465b; font-size: 15px; }
+  .notice-summary span { color: #68778a; font-size: 12px; }
+  .mock-description { margin: 0 0 18px; color: #68778a; font-size: 13px; line-height: 1.7; }
+  .current-response { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; color: #68778a; font-size: 12px; }
+  .response-tag { padding: 4px 8px; border: 1px solid #f0d9a7; border-radius: 4px; background: #fff8e8; color: #815a12; font-weight: 700; }
+  .response-tag.is-recommended { border-color: #c7e3d2; background: #edf8f1; color: #2b6945; }
+  .mock-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .mock-actions button, .mock-actions a { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 14px; border: 1px solid #2857a4; border-radius: 5px; font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; }
+  .mock-actions button { background: #2857a4; color: #fff; }
+  .mock-actions button:hover { background: #204986; }
+  .mock-actions a { border-color: #cbd4df; background: #fff; color: #42536a; }
+  .mock-actions a:hover { background: #f1f4f7; }
+  .mock-error { margin: 0 0 16px; color: #9b493f; font-size: 13px; }
+
+  @media (max-width: 520px) {
+    .instruction-mock-page { margin-top: 24px; }
+    .mock-content { padding: 17px; }
+    .mock-content h1 { font-size: 20px; }
+    .mock-actions > * { width: 100%; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="instruction-mock-page">
+  <a class="back-link" href="{{ url_for('report_list') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>災害通報一覧へ戻る</a>
+  <section class="mock-content">
+    <span class="mock-label">指示情報作成・簡易モック</span>
+    <h1>指示情報を作成</h1>
+    <div class="notice-summary">
+      <strong>{{ notice.name }}</strong>
+      <span>青森市 ・ 気象庁 {{ notice.warning_status }} ・ 発表 {{ notice.report_time }}</span>
+    </div>
+    <p class="mock-description">この画面は指示情報作成画面への遷移確認用です。指示内容の入力・配信機能は別途実装します。記録すると、この情報の状態を「勧告済み」にします。</p>
+    <div class="current-response">
+      <span>現在のタグ</span>
+      <span class="response-tag{% if response_status == '勧告済み' %} is-recommended{% endif %}">{{ response_status }}</span>
+    </div>
+    {% if error %}<p class="mock-error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post">
+      <input type="hidden" name="code" value="{{ notice.code }}">
+      <input type="hidden" name="name" value="{{ notice.name }}">
+      <input type="hidden" name="warning_status" value="{{ notice.warning_status }}">
+      <input type="hidden" name="report_time" value="{{ notice.report_time }}">
+      <div class="mock-actions">
+        <button type="submit"><i class="fa-solid fa-check" aria-hidden="true"></i>勧告済みにして一覧へ戻る</button>
+        <a href="{{ url_for('report_list') }}">キャンセル</a>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

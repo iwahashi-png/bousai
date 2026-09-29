@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}災害通報一覧 | 防災アプリ{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+  .reports-page {
+    width: min(1160px, calc(100% - 40px));
+    margin: 32px auto 56px;
+  }
+
+  .page-heading { margin-bottom: 25px; }
+  .page-eyebrow { margin: 0 0 5px; color: #68778a; font-size: 12px; font-weight: 600; }
+  .page-heading h1 { margin: 0; color: #26364a; font-size: 26px; font-weight: 700; }
+
+  .weather-notices {
+    margin: 0 0 34px;
+    padding: 20px;
+    border: 1px solid #e1e7ed;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .weather-notices-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .weather-notices-heading h2 { margin: 0; color: #2e4054; font-size: 17px; }
+  .weather-notices-heading p { margin: 0; color: #788697; font-size: 11px; }
+  .weather-notice-list { display: grid; gap: 9px; }
+
+  .weather-notice {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px 18px;
+    padding: 13px 14px;
+    border: 1px solid #e3e8ee;
+    border-left: 4px solid #d5a33d;
+    border-radius: 5px;
+    background: #fffdf8;
+  }
+
+  .weather-notice.is-warning { border-left-color: #bf5146; background: #fffafa; }
+  .weather-notice-content { display: grid; gap: 6px; min-width: 0; }
+  .weather-notice-title { margin: 0; color: #2e4054; font-size: 14px; font-weight: 700; }
+  .weather-notice-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; color: #788697; font-size: 11px; }
+
+  .notice-state {
+    display: inline-flex;
+    align-items: center;
+    min-height: 25px;
+    padding: 0 8px;
+    border: 1px solid #f0d9a7;
+    border-radius: 4px;
+    background: #fff8e8;
+    color: #815a12;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .notice-state.is-recommended { border-color: #c7e3d2; background: #edf8f1; color: #2b6945; }
+
+  .notice-create-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 36px;
+    padding: 0 11px;
+    border: 1px solid #2857a4;
+    border-radius: 4px;
+    color: #2857a4;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .notice-create-link:hover,
+  .notice-create-link:focus-visible { background: #edf3fb; }
+  .notice-empty, .notice-error { margin: 0; padding: 14px; border-radius: 5px; font-size: 13px; }
+  .notice-empty { background: #f3f7f4; color: #3b6b4d; }
+  .notice-error { background: #fff4f1; color: #9b493f; }
+  .notice-updated { margin: 10px 0 0; color: #8793a0; font-size: 11px; text-align: right; }
+
+  .filter-form {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+    padding: 17px 0;
+    border-top: 1px solid #dce3eb;
+    border-bottom: 1px solid #dce3eb;
+  }
+
+  .filter-field { display: grid; gap: 6px; }
+  .filter-field label { color: #58677a; font-size: 12px; font-weight: 600; }
+
+  .filter-field select {
+    min-width: 175px;
+    height: 40px;
+    padding: 0 34px 0 11px;
+    border: 1px solid #cbd4df;
+    border-radius: 5px;
+    background: #fff;
+    color: #35465b;
+    font: inherit;
+    font-size: 14px;
+  }
+
+  .filter-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid #cbd4df;
+    border-radius: 5px;
+    background: #fff;
+    color: #35465b;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .filter-clear:hover { border-color: #8b9aab; background: #f1f4f7; }
+  .result-count { margin: 18px 0 10px; color: #6c7989; font-size: 13px; }
+  .report-table-wrap { overflow-x: auto; border-top: 1px solid #cfd8e3; }
+
+  .report-table {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+    text-align: left;
+  }
+
+  .report-table th {
+    padding: 12px 10px;
+    border-bottom: 1px solid #cfd8e3;
+    background: #f1f4f7;
+    color: #59697b;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .report-table td {
+    padding: 14px 10px;
+    border-bottom: 1px solid #e2e7ed;
+    color: #35465b;
+    font-size: 13px;
+    vertical-align: top;
+  }
+
+  .detail-cell,
+  .action-cell { width: 82px; }
+
+  .detail-link,
+  .respond-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 9px;
+    border: 1px solid #b9c8dc;
+    border-radius: 4px;
+    color: #2857a4;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .detail-link:hover,
+  .detail-link:focus-visible { border-color: #2857a4; background: #edf3fb; }
+
+  .respond-link { border-color: #2857a4; background: #2857a4; color: #fff; }
+  .respond-link:hover,
+  .respond-link:focus-visible { background: #204986; }
+
+  .report-time { color: #536275; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .location-type {
+    display: inline-block;
+    padding: 3px 7px;
+    border: 1px solid #d6dfe8;
+    border-radius: 4px;
+    background: #f7f9fb;
+    color: #4a5e72;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .location-name,
+  .report-type {
+    display: block;
+    margin-bottom: 4px;
+    color: #2e4054;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .report-situation { display: block; color: #68778a; line-height: 1.65; }
+  .report-source { display: grid; gap: 4px; color: #56677a; }
+  .report-source small { color: #8793a0; font-size: 11px; }
+
+  .status-badge {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 102px;
+    padding: 5px 8px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    line-height: 1.35;
+  }
+
+  .status-badge strong { font-size: 12px; font-weight: 700; }
+  .status-badge small { font-size: 10px; }
+  .status-open { border-color: #f0d9a7; background: #fff8e8; color: #815a12; }
+  .status-progress { border-color: #c8d8f0; background: #eef4fc; color: #31598c; }
+  .status-done { border-color: #c7e3d2; background: #edf8f1; color: #2b6945; }
+
+  .empty-state {
+    padding: 48px 16px;
+    border-bottom: 1px solid #e2e7ed;
+    color: #68778a;
+    text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .reports-page { width: calc(100% - 28px); margin-top: 24px; }
+    .page-heading h1 { font-size: 22px; }
+    .filter-form { align-items: stretch; flex-direction: column; gap: 12px; }
+    .filter-field select,
+    .filter-clear { width: 100%; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reports-page">
+  <header class="page-heading">
+    <p class="page-eyebrow">情報収集</p>
+    <h1>災害通報一覧</h1>
+  </header>
+
+  <section class="weather-notices" aria-labelledby="weather-notices-title">
+    <div class="weather-notices-heading">
+      <h2 id="weather-notices-title">気象庁からの警報・注意報</h2>
+      <p>青森市</p>
+    </div>
+    <div class="weather-notice-list" id="weather-notice-list" aria-live="polite">
+      <p class="notice-empty">気象情報を確認しています...</p>
+    </div>
+    <p class="notice-updated" id="weather-notice-updated"></p>
+  </section>
+
+  <form class="filter-form" id="report-filters" method="get" action="{{ url_for('report_list') }}">
+    <div class="filter-field">
+      <label for="location-type">要対応場所</label>
+      <select id="location-type" name="location_type">
+        <option value="">すべて</option>
+        {% for location_type in location_types %}
+        <option value="{{ location_type }}" {% if selected_location_type == location_type %}selected{% endif %}>{{ location_type }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-field">
+      <label for="response-status">対応状況</label>
+      <select id="response-status" name="response_status">
+        <option value="">すべて</option>
+        {% for status, description in response_statuses.items() %}
+        <option value="{{ status }}" {% if selected_response_status == status %}selected{% endif %}>{{ status }}：{{ description }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-field">
+      <label for="sort-order">発生日時</label>
+      <select id="sort-order" name="sort">
+        <option value="newest" {% if sort_order == 'newest' %}selected{% endif %}>新しい順</option>
+        <option value="oldest" {% if sort_order == 'oldest' %}selected{% endif %}>古い順</option>
+      </select>
+    </div>
+    <button class="filter-clear" id="clear-filters" type="button"><i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i>フィルターをクリア</button>
+  </form>
+
+  <p class="result-count">{{ reports|length }}件{% if selected_location_type %}（{{ selected_location_type }}）{% endif %}{% if selected_response_status %}（{{ selected_response_status }}）{% endif %} / 全{{ total_count }}件</p>
+
+  {% if reports %}
+  <div class="report-table-wrap">
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th class="detail-cell" scope="col">詳細</th>
+          <th class="action-cell" scope="col">対応</th>
+          <th scope="col">発生日時</th>
+          <th scope="col">要対応場所</th>
+          <th scope="col">場所</th>
+          <th scope="col">災害種別・現状</th>
+          <th scope="col">通報者・情報源</th>
+          <th scope="col">対応状況</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in reports %}
+        <tr>
+          <td class="detail-cell"><a class="detail-link" href="{{ url_for('report_detail', report_id=report.id) }}" aria-label="通報 {{ report.id }} の詳細"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>詳細</a></td>
+          <td class="action-cell"><a class="respond-link" href="{{ url_for('report_respond', report_id=report.id) }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>対応する</a></td>
+          <td class="report-time"><time datetime="{{ report.occurred_at }}">{{ report.occurred_at.replace('T', ' ') }}</time></td>
+          <td><span class="location-type">{{ report.response_location_type }}</span></td>
+          <td><span class="location-name">{{ report.location }}</span></td>
+          <td><span class="report-type">{{ report.disaster_type }}</span><span class="report-situation">{{ report.situation }}</span></td>
+          <td><span class="report-source">{{ report.reporter }}<small>{{ report.source }}</small></span></td>
+          <td><span class="status-badge {{ status_classes.get(report.response_status, 'status-open') }}"><strong>{{ report.response_status }}</strong><small>{{ response_statuses.get(report.response_status, '未着手') }}</small></span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty-state">条件に一致する通報はありません。</p>
+  {% endif %}
+</div>
+<script>
+  const weatherNoticeList = document.querySelector('#weather-notice-list');
+  const weatherNoticeUpdated = document.querySelector('#weather-notice-updated');
+
+  function renderWeatherNotices(data) {
+    if (data.error) {
+      weatherNoticeList.innerHTML = '<p class="notice-error">気象情報を取得できませんでした。</p>';
+      return;
+    }
+
+    const warnings = Array.isArray(data.warnings) ? data.warnings : [];
+    if (warnings.length === 0) {
+      weatherNoticeList.innerHTML = '<p class="notice-empty">現在、発令中の警報・注意報はありません。</p>';
+    } else {
+      const fragment = document.createDocumentFragment();
+      warnings.forEach((warning) => {
+        const notice = document.createElement('article');
+        notice.className = `weather-notice${warning.name.includes('警報') ? ' is-warning' : ''}`;
+
+        const content = document.createElement('div');
+        content.className = 'weather-notice-content';
+        const title = document.createElement('h3');
+        title.className = 'weather-notice-title';
+        title.textContent = warning.name;
+        const metadata = document.createElement('div');
+        metadata.className = 'weather-notice-meta';
+        const source = document.createElement('span');
+        source.textContent = `気象庁・${warning.status}`;
+        const state = document.createElement('span');
+        state.className = `notice-state${warning.response_status === '勧告済み' ? ' is-recommended' : ''}`;
+        state.textContent = warning.response_status || '未対応';
+        metadata.append(source, state);
+        content.append(title, metadata);
+
+        const action = document.createElement('a');
+        action.className = 'notice-create-link';
+        action.href = warning.instruction_url;
+        action.innerHTML = '<i class="fa-solid fa-file-circle-plus" aria-hidden="true"></i>指示情報を作成';
+        notice.append(content, action);
+        fragment.append(notice);
+      });
+      weatherNoticeList.replaceChildren(fragment);
+    }
+
+    weatherNoticeUpdated.textContent = data.last_fetch_time
+      ? `情報取得: ${data.last_fetch_time}`
+      : '';
+  }
+
+  function loadWeatherNotices() {
+    fetch('/api/weather_warnings')
+      .then((response) => {
+        if (!response.ok) throw new Error('Weather request failed');
+        return response.json();
+      })
+      .then(renderWeatherNotices)
+      .catch(() => {
+        weatherNoticeList.innerHTML = '<p class="notice-error">気象情報を取得できませんでした。</p>';
+      });
+  }
+
+  loadWeatherNotices();
+  setInterval(loadWeatherNotices, 600000);
+
+  const reportFilters = document.querySelector('#report-filters');
+  reportFilters.querySelectorAll('select').forEach((select) => {
+    select.addEventListener('change', () => reportFilters.requestSubmit());
+  });
+
+  document.querySelector('#clear-filters').addEventListener('click', () => {
+    window.location.assign(reportFilters.action);
+  });
+</script>
+{% endblock %}
