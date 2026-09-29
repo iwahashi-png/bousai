@@ -34,5 +34,137 @@
     "status": "完了",
     "created_at": "2026年07月14日 18:22",
     "updated_at": "2026年07月14日 18:22"
+  },
+  {
+    "id": "b4f82027345beaa1251aa488",
+    "type": "evacuation",
+    "target": "住民",
+    "region_id": "aomori-central",
+    "region_name": "青森市中央区",
+    "shelter_ids": [
+      "1"
+    ],
+    "shelters": [
+      "御所見小学校"
+    ],
+    "content": "青森市中央区の住民は、御所見小学校へ避難してください。",
+    "status": "解除済み",
+    "created_at": "2026年09月29日 15:13",
+    "created_at_iso": "2026-09-29T15:13:53+09:00",
+    "created_by": "test-staff",
+    "history": [
+      {
+        "action": "追加",
+        "region_id": "aomori-central",
+        "region_name": "青森市中央区",
+        "shelters": [
+          "御所見小学校"
+        ],
+        "timestamp": "2026-09-29T15:13:53+09:00",
+        "timestamp_display": "2026年09月29日 15:13",
+        "operator": "test-staff"
+      },
+      {
+        "action": "解除",
+        "region_id": "aomori-central",
+        "region_name": "青森市中央区",
+        "shelters": [
+          "御所見小学校"
+        ],
+        "timestamp": "2026-09-29T15:15:14+09:00",
+        "timestamp_display": "2026年09月29日 15:15",
+        "operator": "test-staff"
+      }
+    ],
+    "revoked_at": "2026年09月29日 15:15",
+    "revoked_at_iso": "2026-09-29T15:15:14+09:00"
+  },
+  {
+    "id": "99f6bca1d1269334216b5d55",
+    "type": "evacuation",
+    "target": "住民",
+    "region_id": "aomori-central",
+    "region_name": "青森市中央区",
+    "shelter_ids": [
+      "1"
+    ],
+    "shelters": [
+      "御所見小学校"
+    ],
+    "content": "青森市中央区の住民は、御所見小学校へ避難してください。",
+    "status": "解除済み",
+    "created_at": "2026年09月29日 15:14",
+    "created_at_iso": "2026-09-29T15:14:04+09:00",
+    "created_by": "test-staff",
+    "history": [
+      {
+        "action": "追加",
+        "region_id": "aomori-central",
+        "region_name": "青森市中央区",
+        "shelters": [
+          "御所見小学校"
+        ],
+        "timestamp": "2026-09-29T15:14:04+09:00",
+        "timestamp_display": "2026年09月29日 15:14",
+        "operator": "test-staff"
+      },
+      {
+        "action": "解除",
+        "region_id": "aomori-central",
+        "region_name": "青森市中央区",
+        "shelters": [
+          "御所見小学校"
+        ],
+        "timestamp": "2026-09-29T15:14:46+09:00",
+        "timestamp_display": "2026年09月29日 15:14",
+        "operator": "test-staff"
+      }
+    ],
+    "revoked_at": "2026年09月29日 15:14",
+    "revoked_at_iso": "2026-09-29T15:14:46+09:00"
+  },
+  {
+    "id": "b83bb64544294f5eaab821b1",
+    "type": "evacuation",
+    "target": "住民",
+    "region_id": "aomori-west",
+    "region_name": "青森市西区",
+    "shelter_ids": [
+      "aomori-west-shelter-2"
+    ],
+    "shelters": [
+      "青森市立新城小学校"
+    ],
+    "content": "青森市西区の住民は、青森市立新城小学校へ避難してください。",
+    "status": "解除済み",
+    "created_at": "2026年09月29日 15:14",
+    "created_at_iso": "2026-09-29T15:14:04+09:00",
+    "created_by": "test-staff",
+    "history": [
+      {
+        "action": "追加",
+        "region_id": "aomori-west",
+        "region_name": "青森市西区",
+        "shelters": [
+          "青森市立新城小学校"
+        ],
+        "timestamp": "2026-09-29T15:14:04+09:00",
+        "timestamp_display": "2026年09月29日 15:14",
+        "operator": "test-staff"
+      },
+      {
+        "action": "解除",
+        "region_id": "aomori-west",
+        "region_name": "青森市西区",
+        "shelters": [
+          "青森市立新城小学校"
+        ],
+        "timestamp": "2026-09-29T15:15:11+09:00",
+        "timestamp_display": "2026年09月29日 15:15",
+        "operator": "test-staff"
+      }
+    ],
+    "revoked_at": "2026年09月29日 15:15",
+    "revoked_at_iso": "2026-09-29T15:15:11+09:00"
   }
 ]

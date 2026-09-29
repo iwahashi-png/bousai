@@ -1,2 +1,5 @@
 .vercel
 __pycache__/
+/bousai_app/data/community_reports.sqlite3*
+/bousai_app/uploads/community-reports/
+*.py[cod]

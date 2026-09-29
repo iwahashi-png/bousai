@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}みんなの災害情報 | 防災アプリ{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  .community-list-page { width: min(1100px, calc(100% - 36px)); margin: 30px auto 56px; }
+  .list-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
+  .list-heading h1 { margin: 0 0 6px; color: #26364a; font-size: 25px; }
+  .list-heading p { margin: 0; color: #68778a; font-size: 13px; }
+  .new-report-link { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 15px; border: 1px solid #25384c; border-radius: 5px; background: #d9f0f5; color: #172534; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .new-report-link:hover { background: #c8e9ef; }
+  .list-flash, .storage-error { margin: 0 0 17px; padding: 12px 14px; border-radius: 5px; font-size: 13px; }
+  .list-flash { border-left: 4px solid #38935c; background: #edf8f1; color: #2b6945; }
+  .storage-error { border-left: 4px solid #b34e43; background: #fff3f1; color: #8e372f; }
+  .map-section { margin-bottom: 28px; }
+  .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 11px; }
+  .section-heading h2 { margin: 0; color: #35465b; font-size: 17px; }
+  .section-heading span { color: #788697; font-size: 11px; }
+  .community-map { height: 340px; overflow: hidden; border: 1px solid #d6dfe8; border-radius: 6px; background: #e3eff1; }
+  #community-reports-map { width: 100%; height: 100%; }
+  .reports-section-heading { margin: 0 0 12px; color: #35465b; font-size: 17px; }
+  .report-cards { display: grid; gap: 12px; }
+  .report-card { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 18px; padding: 16px; border: 1px solid #e1e7ed; border-radius: 6px; background: #fff; }
+  .report-card-content { min-width: 0; }
+  .report-meta { display: flex; flex-wrap: wrap; gap: 7px 12px; margin-bottom: 8px; color: #788697; font-size: 11px; }
+  .category-label { color: #31598c; font-weight: 700; }
+  .report-card h3 { margin: 0 0 5px; color: #2e4054; font-size: 16px; }
+  .report-place { margin: 0 0 8px; color: #52667a; font-size: 12px; }
+  .report-comment { margin: 0; color: #5d6c7e; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .report-photo { display: block; width: 100%; height: 132px; border-radius: 4px; object-fit: cover; }
+  .empty-state { margin: 0; padding: 28px 16px; border: 1px solid #e1e7ed; border-radius: 6px; color: #68778a; font-size: 13px; text-align: center; }
+  .popup-photo { display: block; max-width: 220px; max-height: 150px; margin-top: 8px; border-radius: 4px; object-fit: cover; }
+
+  @media (max-width: 640px) {
+    .community-list-page { width: calc(100% - 28px); margin-top: 23px; }
+    .list-heading { align-items: stretch; flex-direction: column; }
+    .list-heading h1 { font-size: 22px; }
+    .new-report-link { width: 100%; }
+    .community-map { height: 285px; }
+    .report-card { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .report-photo { height: auto; max-height: 280px; aspect-ratio: 16 / 9; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="community-list-page">
+  <header class="list-heading">
+    <div>
+      <h1>みんなの災害情報</h1>
+      <p>青森市内から寄せられた報告を、地図と一覧で確認できます。</p>
+    </div>
+    <a class="new-report-link" href="{{ url_for('community.community_report_new') }}">通報する</a>
+  </header>
+
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+  <p class="list-flash" role="status">{{ message }}</p>
+  {% endfor %}
+  {% if storage_error %}
+  <p class="storage-error" role="alert">災害情報を現在取得できません。時間をおいて再度お試しください。</p>
+  {% endif %}
+
+  <section class="map-section" aria-labelledby="map-title">
+    <div class="section-heading">
+      <h2 id="map-title">青森市の通報マップ</h2>
+      <span>{{ reports|length }}件</span>
+    </div>
+    <div class="community-map"><div id="community-reports-map" role="application" aria-label="青森市の公開災害通報地図"></div></div>
+  </section>
+
+  <section aria-labelledby="reports-title">
+    <h2 class="reports-section-heading" id="reports-title">新しい報告</h2>
+    {% if reports %}
+    <div class="report-cards">
+      {% for report in reports %}
+      <article class="report-card">
+        <div class="report-card-content">
+          <div class="report-meta">
+            <time datetime="{{ report.reported_at }}">{{ report.reported_at.replace('T', ' ') }}</time>
+            <span class="category-label">{{ report.category }}</span>
+          </div>
+          <h3>{{ report.place }}</h3>
+          {% if report.comment %}<p class="report-comment">{{ report.comment }}</p>{% endif %}
+        </div>
+        {% if report.photo_url %}<img class="report-photo" src="{{ report.photo_url }}" alt="{{ report.category }}の通報写真" loading="lazy">{% endif %}
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">まだ通報はありません。最初の情報を共有してください。</p>
+    {% endif %}
+  </section>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const reports = {{ reports|tojson }};
+    const map = L.map('community-reports-map').setView([40.8222, 140.7478], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      referrerPolicy: 'strict-origin-when-cross-origin'
+    }).addTo(map);
+
+    const points = [];
+    reports.forEach(report => {
+      if (!Number.isFinite(report.latitude) || !Number.isFinite(report.longitude)) return;
+      const marker = L.marker([report.latitude, report.longitude]).addTo(map);
+      const popup = document.createElement('div');
+      const time = document.createElement('p');
+      time.textContent = report.reported_at.replace('T', ' ');
+      const category = document.createElement('strong');
+      category.textContent = report.category;
+      const place = document.createElement('p');
+      place.textContent = report.place;
+      popup.append(time, category, place);
+      if (report.comment) {
+        const comment = document.createElement('p');
+        comment.textContent = report.comment;
+        popup.append(comment);
+      }
+      if (report.photo_url) {
+        const photo = document.createElement('img');
+        photo.className = 'popup-photo';
+        photo.src = report.photo_url;
+        photo.alt = `${report.category}の通報写真`;
+        photo.loading = 'lazy';
+        popup.append(photo);
+      }
+      marker.bindPopup(popup);
+      points.push([report.latitude, report.longitude]);
+    });
+
+    if (points.length > 1) map.fitBounds(points, { padding: [24, 24], maxZoom: 14 });
+  });
+</script>
+{% endblock %}

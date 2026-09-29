@@ -2,14 +2,61 @@
 
 {% block title %}ホーム | 防災アプリ{% endblock %}
 
+{% block body_class %}resident-home-body{% endblock %}
+
 {% block head_extra %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <style>
+  .resident-home-actions {
+    display: grid;
+    gap: 12px;
+    width: min(710px, calc(100% - 32px));
+    margin: 24px auto 18px;
+  }
+
+  .resident-home-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 94px;
+    padding: 18px 22px;
+    border: 1px solid #d4dde6;
+    border-radius: 8px;
+    color: #172534;
+    text-decoration: none;
+    transition: background-color 140ms ease;
+  }
+
+  .resident-home-action:hover,
+  .resident-home-action:focus-visible { text-decoration: underline; }
+  .report-action { background: #d9f0f5; }
+  .report-action:hover { background: #c8e9ef; }
+  .community-action { background: #fff2c7; }
+  .community-action:hover { background: #ffebac; }
+  .resident-home-action strong { display: block; font-size: 20px; }
+  .resident-home-action small { display: block; margin-top: 4px; color: #46576a; font-size: 12px; }
+  .resident-home-action > i { flex: 0 0 auto; font-size: 20px; }
+
   .home-page {
     width: min(710px, calc(100% - 32px));
     margin: 25px auto 40px;
   }
+
+  .resident-instructions {
+    margin: 0 0 22px;
+    padding: 14px 16px;
+    border: 1px solid #e8d8b7;
+    border-left: 4px solid #bd7d22;
+    border-radius: 5px;
+    background: #fffaf0;
+  }
+
+  .resident-instructions h2 { margin: 0 0 9px; color: #684618; font-size: 15px; }
+  .resident-instruction + .resident-instruction { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee2cc; }
+  .resident-instruction h3 { margin: 0 0 4px; color: #35465b; font-size: 13px; }
+  .resident-instruction p { margin: 0; color: #59697b; font-size: 12px; line-height: 1.6; }
 
   .home-card {
     padding: 21px;
@@ -191,7 +238,31 @@
 {% endblock %}
 
 {% block content %}
+<nav class="resident-home-actions" aria-label="災害情報の主な操作">
+  <a class="resident-home-action report-action" href="{{ url_for('community.community_report_new') }}">
+    <span><strong>通報する</strong><small>青森市内で確認した災害情報を共有</small></span>
+    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+  </a>
+  <a class="resident-home-action community-action" href="{{ url_for('community.community_reports') }}">
+    <span><strong>他の人の報告を見る</strong><small>みんなの災害情報を地図と一覧で確認</small></span>
+    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+  </a>
+</nav>
 <div class="home-page">
+  {% if resident_notices %}
+  <section class="resident-instructions" aria-labelledby="resident-instructions-title">
+    <h2 id="resident-instructions-title">住民向け避難情報</h2>
+    {% for notice in resident_notices %}
+    <article class="resident-instruction">
+      <h3>{{ notice.region_name or '避難指示' }}</h3>
+      <p>{{ notice.content }}</p>
+      {% if notice.shelters %}<p>避難先: {{ notice.shelters|join('、') }}</p>
+      {% elif notice.shelter %}<p>避難先: {{ notice.shelter }}</p>{% endif %}
+    </article>
+    {% endfor %}
+  </section>
+  {% endif %}
+
   <section class="home-card map-card" aria-labelledby="map-heading">
     <h2 class="section-heading" id="map-heading">
       <i class="fa-solid fa-location-dot" aria-hidden="true"></i>

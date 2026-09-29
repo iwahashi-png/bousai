@@ -5,105 +5,183 @@
 {% block head_extra %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <style>
-  .report-detail-page { width: min(860px, calc(100% - 40px)); margin: 32px auto 56px; }
-  .back-link { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; color: #2857a4; font-size: 13px; font-weight: 600; text-decoration: none; }
-  .back-link:hover { text-decoration: underline; }
-  .detail-heading { padding-bottom: 18px; border-bottom: 1px solid #dce3eb; }
-  .mock-label { display: inline-block; margin-bottom: 10px; padding: 4px 8px; border: 1px solid #d5dce5; border-radius: 4px; color: #657487; font-size: 11px; font-weight: 600; }
-  .detail-heading h1 { margin: 0 0 8px; color: #26364a; font-size: 24px; }
+  .report-detail-page { width: min(900px, calc(100% - 36px)); margin: 28px auto 56px; }
+  .detail-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .back-link { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; color: #2857a4; font-size: 13px; font-weight: 600; text-decoration: none; }
+  .back-link:hover, .back-link:focus-visible { text-decoration: underline; }
+  .report-position { color: #68778a; font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .detail-heading { padding-bottom: 17px; border-bottom: 1px solid #dce3eb; }
+  .detail-heading h1 { margin: 0 0 6px; color: #26364a; font-size: 24px; overflow-wrap: anywhere; }
   .detail-heading p { margin: 0; color: #68778a; font-size: 13px; }
   .detail-section { padding: 20px 0; border-bottom: 1px solid #e2e7ed; }
-  .detail-section h2 { margin: 0 0 14px; color: #35465b; font-size: 16px; }
-  .detail-grid { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 0; margin: 0; }
-  .detail-grid dt, .detail-grid dd { margin: 0; padding: 11px 10px; border-top: 1px solid #e9edf2; font-size: 13px; line-height: 1.7; }
+  .detail-section h2 { margin: 0 0 13px; color: #35465b; font-size: 16px; }
+  .detail-grid { display: grid; grid-template-columns: 155px minmax(0, 1fr); margin: 0; }
+  .detail-grid dt, .detail-grid dd { min-width: 0; margin: 0; padding: 10px 9px; border-top: 1px solid #e9edf2; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
   .detail-grid dt { color: #68778a; }
-  .detail-grid dd { color: #35465b; }
-  .current-status, .history-status { display: inline-flex; flex-direction: column; gap: 3px; padding: 7px 10px; border: 1px solid transparent; border-radius: 5px; }
-  .current-status strong, .history-status strong { font-size: 13px; }
-  .current-status small, .history-status small { font-size: 11px; }
+  .detail-grid dd { color: #35465b; white-space: pre-wrap; }
+
+  .level-badge, .status-badge { display: inline-flex; align-items: center; min-height: 29px; padding: 0 10px; border: 1px solid transparent; border-radius: 5px; font-size: 12px; font-weight: 700; }
+  .level-1 { border-color: #b9ddca; background: #edf8f1; color: #286343; }
+  .level-2 { border-color: #d5e3b2; background: #f4f8e8; color: #596c27; }
+  .level-3 { border-color: #f0d9a7; background: #fff8e8; color: #815a12; }
+  .level-4 { border-color: #efc39b; background: #fff1e7; color: #984719; }
+  .level-5 { border-color: #e4b5b5; background: #fff0f0; color: #963b3b; }
+  .level-unknown, .status-unknown { border-color: #d6dfe8; background: #f3f5f7; color: #647487; }
   .status-open { border-color: #f0d9a7; background: #fff8e8; color: #815a12; }
   .status-progress { border-color: #c8d8f0; background: #eef4fc; color: #31598c; }
   .status-done { border-color: #c7e3d2; background: #edf8f1; color: #2b6945; }
-  .history-list { display: grid; margin: 0; padding: 0; list-style: none; }
-  .history-item { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 14px; padding: 15px 0; border-top: 1px solid #e9edf2; }
-  .history-meta { display: grid; align-content: start; justify-items: start; gap: 7px; }
-  .history-meta time, .history-meta small { color: #788697; font-size: 11px; }
-  .history-comment { margin: 0; color: #35465b; font-size: 13px; line-height: 1.7; white-space: pre-wrap; }
-  .history-empty { margin: 0; color: #788697; font-size: 13px; }
-  .photo-placeholder { display: grid; min-height: 190px; place-content: center; gap: 10px; border: 1px dashed #bac6d4; border-radius: 6px; background: #f2f5f8; color: #718094; font-size: 13px; text-align: center; }
-  .photo-placeholder i { font-size: 26px; }
-  .photo-note { margin: 9px 0 0; color: #8793a0; font-size: 11px; }
 
-  @media (max-width: 520px) {
-    .report-detail-page { width: calc(100% - 28px); margin-top: 24px; }
+  .progress-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 0; padding: 0; list-style: none; }
+  .progress-step { position: relative; min-width: 0; padding: 0 12px 4px 0; }
+  .progress-step::before { display: block; width: 16px; height: 16px; margin-bottom: 8px; border: 2px solid #b9c5d2; border-radius: 50%; background: #fff; content: ''; }
+  .progress-step.is-complete::before { border-color: #3f8a5e; background: #3f8a5e; box-shadow: inset 0 0 0 3px #fff; }
+  .progress-step.is-current::before { border-color: #2857a4; background: #fff; box-shadow: 0 0 0 3px #dce8f7; }
+  .progress-step:not(:last-child)::after { position: absolute; top: 7px; left: 23px; right: 6px; height: 2px; background: #d6dfe8; content: ''; }
+  .progress-step.is-complete:not(:last-child)::after { background: #8fbea1; }
+  .progress-step strong { display: block; color: #43556a; font-size: 12px; }
+  .progress-step.is-current strong { color: #2857a4; }
+  .progress-step time { display: block; margin-top: 4px; color: #788697; font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
+  .progress-empty { margin: 0 0 12px; color: #647487; font-size: 13px; }
+  .history-list { display: grid; gap: 0; margin: 14px 0 0; padding: 0; list-style: none; }
+  .history-item { display: grid; grid-template-columns: 155px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-top: 1px solid #e9edf2; }
+  .history-meta { display: grid; align-content: start; justify-items: start; gap: 5px; }
+  .history-meta time, .history-meta small { color: #788697; font-size: 11px; }
+  .history-comment { margin: 0; color: #35465b; font-size: 13px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .empty-state { padding: 32px 16px; border: 1px solid #e1e7ed; border-radius: 5px; color: #68778a; font-size: 14px; }
+  .weather-error { padding: 12px 14px; border-left: 4px solid #b34e43; background: #fff3f1; color: #8e372f; font-size: 13px; }
+  .weather-empty { margin: 0; padding: 12px 14px; border-radius: 4px; background: #f3f7f4; color: #3b6b4d; font-size: 13px; }
+  .warning-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .warning-item { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; padding: 10px 12px; border: 1px solid #e7d7b9; border-left: 4px solid #d5a33d; border-radius: 4px; }
+  .warning-name { color: #35465b; font-size: 13px; font-weight: 700; }
+  .warning-status { color: #6e5b35; font-size: 11px; }
+  .weather-meta { display: grid; gap: 4px; margin: 10px 0 0; color: #788697; font-size: 11px; }
+  .weather-meta p { margin: 0; }
+  .report-photo { display: block; max-width: 100%; max-height: 520px; border-radius: 5px; object-fit: contain; }
+  .photo-empty { display: flex; align-items: center; gap: 8px; margin: 0; color: #788697; font-size: 13px; }
+  .detail-navigation { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+  .detail-navigation a, .navigation-disabled { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 1px solid #cbd4df; border-radius: 5px; color: #2857a4; font-size: 12px; font-weight: 600; text-decoration: none; }
+  .detail-navigation a:hover, .detail-navigation a:focus-visible { background: #edf3fb; border-color: #2857a4; }
+  .navigation-disabled { color: #8793a0; background: #f4f6f8; }
+
+  @media (max-width: 560px) {
+    .report-detail-page { width: calc(100% - 28px); margin-top: 20px; }
     .detail-heading h1 { font-size: 21px; }
-    .detail-grid { grid-template-columns: 105px minmax(0, 1fr); }
-    .history-item { grid-template-columns: 1fr; gap: 8px; }
+    .detail-grid { grid-template-columns: 112px minmax(0, 1fr); }
+    .detail-grid dt, .detail-grid dd { padding: 9px 6px; font-size: 12px; }
+    .history-item { grid-template-columns: 1fr; gap: 7px; }
+    .progress-list { grid-template-columns: minmax(0, 1fr); gap: 9px; }
+    .progress-step { display: grid; grid-template-columns: 18px minmax(0, 1fr); column-gap: 9px; padding: 0 0 4px; }
+    .progress-step::before { grid-row: span 2; margin: 1px 0 0; }
+    .progress-step:not(:last-child)::after { top: 18px; bottom: -7px; left: 7px; right: auto; width: 2px; height: auto; }
+    .progress-step strong, .progress-step time { grid-column: 2; }
+    .detail-navigation a, .navigation-disabled { flex: 1 1 0; justify-content: center; padding: 0 6px; }
   }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="report-detail-page">
-  <a class="back-link" href="{{ url_for('report_list') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>通報一覧へ戻る</a>
+  <div class="detail-topline">
+    <a class="back-link" href="{{ url_for('report_list') }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>通報一覧へ戻る</a>
+    {% if report and report_count %}<span class="report-position">{{ current_index + 1 }} / 全{{ report_count }}件</span>{% endif %}
+  </div>
+
+  {% if not report %}
+    {% if report_not_found %}
+    <h1 class="detail-heading">通報が見つかりません</h1>
+    <p class="empty-state">指定された通報IDは存在しないか、すでに削除されています。</p>
+    {% else %}
+    <h1 class="detail-heading">通報詳細</h1>
+    <p class="empty-state">確認できる通報はありません。</p>
+    {% endif %}
+  {% else %}
   <header class="detail-heading">
-    <span class="mock-label">通報詳細・モック</span>
-    <h1>{{ report.disaster_type }}：{{ report.location }}</h1>
-    <p>通報番号 {{ report.id }} ・ {{ report.occurred_at.replace('T', ' ') }}</p>
+    <h1>{{ report.disaster_type or '通報詳細' }}</h1>
+    <p>通報ID: {{ report.id }}</p>
   </header>
 
-  <section class="detail-section">
-    <h2>通報内容</h2>
+  <section class="detail-section" aria-labelledby="summary-title">
+    <h2 id="summary-title">通報内容</h2>
     <dl class="detail-grid">
-      <dt>要対応場所</dt><dd>{{ report.response_location_type }}</dd>
-      <dt>発生場所</dt><dd>{{ report.location }}</dd>
-      <dt>災害種別</dt><dd>{{ report.disaster_type }}</dd>
-      <dt>現在の状況</dt><dd>{{ report.situation }}</dd>
-      <dt>通報者</dt><dd>{{ report.reporter }}</dd>
-      <dt>情報源</dt><dd>{{ report.source }}</dd>
-      <dt>詳細・補足</dt><dd>{{ report.details }}</dd>
-      <dt>原因・背景</dt><dd>{{ report.cause }}</dd>
+      <dt>災害レベル</dt><dd><span class="level-badge {{ level_display.class_name }}">{{ level_display.label }}</span></dd>
+      <dt>災害の種類</dt><dd>{{ report.disaster_type or '未登録' }}</dd>
+      <dt>発生場所</dt><dd>{{ report.location or '未登録' }}</dd>
+      <dt>対応状況</dt><dd><span class="status-badge {{ status_classes.get(report.response_status, 'status-unknown') }}">{{ response_status_label }}{% if response_status_description %}（{{ response_status_description }}）{% endif %}</span></dd>
+      <dt>通報日時</dt><dd>{{ occurred_at_display }}</dd>
+      <dt>コメント</dt><dd>{{ report.comment or report.details or '未登録' }}</dd>
+      <dt>通報者</dt><dd>{{ report.reporter or '未登録' }}</dd>
+      <dt>情報源</dt><dd>{{ report.source or '未登録' }}</dd>
     </dl>
   </section>
 
-  <section class="detail-section">
-    <h2>現在の対応状況</h2>
-    <span class="current-status {{ status_classes.get(report.response_status, 'status-open') }}">
-      <strong>{{ report.response_status }}</strong>
-      <small>{{ status_descriptions.get(report.response_status, '未着手') }}</small>
-    </span>
-  </section>
-
-  <section class="detail-section">
-    <h2>対応状況の履歴</h2>
+  <section class="detail-section" aria-labelledby="progress-title">
+    <h2 id="progress-title">対応状況の進行</h2>
+    <ol class="progress-list">
+      {% for step in progress_steps %}
+      <li class="progress-step{% if step.is_current %} is-current{% else %} is-complete{% endif %}"{% if step.is_current %} aria-current="step"{% endif %}>
+        <strong>{{ step.status }}{% if step.is_current %}（現在）{% endif %}</strong>
+        <time>{{ step.time }}</time>
+      </li>
+      {% endfor %}
+    </ol>
     {% if report.response_history %}
-    <ol class="history-list">
+    <ol class="history-list" aria-label="対応履歴">
       {% for entry in report.response_history|reverse %}
       <li class="history-item">
         <div class="history-meta">
-          <span class="history-status {{ status_classes.get(entry.status, 'status-open') }}">
-            <strong>{{ entry.status }}</strong>
-            <small>{{ status_descriptions.get(entry.status, '未着手') }}</small>
-          </span>
-          <time>{{ entry.changed_at }}</time>
-          <small>対応者：{{ entry.changed_by }}</small>
+          <strong>{{ entry.status or '未登録' }}</strong>
+          <time>{{ entry.changed_at or '時刻未記録' }}</time>
+          <small>対応者: {{ entry.changed_by or '未登録' }}</small>
         </div>
-        <p class="history-comment">{{ entry.comment }}</p>
+        <p class="history-comment">{{ entry.comment or 'コメント未登録' }}</p>
       </li>
       {% endfor %}
     </ol>
     {% else %}
-    <p class="history-empty">対応状況の変更履歴はありません。</p>
+    <p class="progress-empty">対応履歴は未登録です。</p>
     {% endif %}
   </section>
 
-  <section class="detail-section">
-    <h2>現地写真</h2>
-    <div class="photo-placeholder">
-      <i class="fa-regular fa-image" aria-hidden="true"></i>
-      <span>{% if report.photo_available %}写真プレビュー（モック）{% else %}写真は添付されていません{% endif %}</span>
-    </div>
-    <p class="photo-note">このページは画面確認用のモックです。写真データは登録されていません。</p>
+  <section class="detail-section" aria-labelledby="photo-title">
+    <h2 id="photo-title">写真</h2>
+    {% if photo_url %}
+    <img class="report-photo" src="{{ photo_url }}" alt="通報ID {{ report.id }} に添付された災害現場の写真">
+    {% else %}
+    <p class="photo-empty"><i class="fa-regular fa-image" aria-hidden="true"></i>写真は未登録です。</p>
+    {% endif %}
   </section>
+
+  <section class="detail-section" aria-labelledby="weather-title">
+    <h2 id="weather-title">{{ weather_data.area_name or '対象地域' }}の気象庁警報・注意報</h2>
+    {% if weather_data.error %}
+    <p class="weather-error" role="status">気象情報を取得できませんでした。通報詳細は引き続き確認できます。</p>
+    {% elif weather_data.warnings %}
+    <ul class="warning-list">
+      {% for warning in weather_data.warnings %}
+      <li class="warning-item"><span class="warning-name">{{ warning.name }}</span><span class="warning-status">{{ warning.status }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="weather-empty">現在発表中の警報・注意報はありません。</p>
+    {% endif %}
+    <div class="weather-meta">
+      <p>発表時刻: {{ weather_data.report_time or '未登録' }}</p>
+      <p>最終取得時刻: {{ weather_data.last_fetch_time or '未登録' }}</p>
+    </div>
+  </section>
+
+  <nav class="detail-navigation" aria-label="通報の前後移動">
+    {% if previous_report %}
+    <a href="{{ url_for('report_detail', report_id=previous_report.id) }}" aria-label="前の通報 ID {{ previous_report.id }}"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>前の通報</a>
+    {% else %}
+    <span class="navigation-disabled" aria-label="前の通報はありません。先頭の通報です"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>前の通報</span>
+    {% endif %}
+    {% if next_report %}
+    <a href="{{ url_for('report_detail', report_id=next_report.id) }}" aria-label="次の通報 ID {{ next_report.id }}">次の通報<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+    {% else %}
+    <span class="navigation-disabled" aria-label="次の通報はありません。最後の通報です">次の通報<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+    {% endif %}
+  </nav>
+  {% endif %}
 </div>
 {% endblock %}

@@ -31,6 +31,10 @@
       background: #f8fafc;
     }
 
+    body.resident-home-body {
+      background: #fff;
+    }
+
     .site-header {
       position: relative;
       z-index: 1000;
@@ -124,7 +128,7 @@
   </style>
   {% block head_extra %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <header class="site-header">
     <div class="site-header-inner">
       <a class="site-brand" href="/">防災アプリ</a>
@@ -133,16 +137,20 @@
       </button>
       <nav class="site-nav" id="site-nav" aria-label="メインメニュー">
         <a href="/">ホーム</a>
+        <a href="/community-report/new">通報する</a>
+        <a href="/community-reports">他の人の報告を見る</a>
         <a href="/reports">災害通報一覧</a>
         <a href="/shelter_search">避難所検索</a>
         <a href="/shelter_register">避難所登録</a>
         <a href="/board">指示・発信ボード</a>
     {% if session.logged_in %}
         <span class="nav-status">ログイン中{% if session.username %}（{{ session.username }}）{% endif %}</span>
+        <a href="/report_detail">通報詳細を確認</a>
+      <a href="/staff/community-reports">住民通報を確認</a>
         <a href="/logout">ログアウト</a>
     {% else %}
         <span class="nav-status">未ログイン</span>
-        <a href="/login">ログイン</a>
+      <a href="/login?next=/staff/community-reports">職員ログイン</a>
     {% endif %}
       </nav>
     </div>

@@ -61,6 +61,7 @@
   </div>
 
   <form class="respond-form" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     {% if error %}<p class="form-error" role="alert">{{ error }}</p>{% endif %}
     <div class="form-field">
       <label for="response-status">変更後の対応状況<span>必須</span></label>

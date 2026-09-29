@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}職員用 通報一覧 | 防災アプリ{% endblock %}
+
+{% block head_extra %}
+<style>
+  .staff-reports-page { width: min(1100px, calc(100% - 36px)); margin: 30px auto 56px; }
+  .staff-reports-page h1 { margin: 0 0 8px; color: #26364a; font-size: 24px; }
+  .staff-intro { margin: 0 0 20px; color: #68778a; font-size: 13px; }
+  .staff-report-list { display: grid; gap: 10px; }
+  .staff-report { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 7px 16px; padding: 14px; border: 1px solid #e1e7ed; border-radius: 5px; background: #fff; }
+  .staff-report time { color: #68778a; font-size: 12px; }
+  .staff-report strong { color: #35465b; font-size: 13px; }
+  .staff-report span, .staff-report p { color: #56677a; font-size: 12px; }
+  .staff-report p { grid-column: 2; margin: 0; white-space: pre-wrap; }
+  .staff-empty { padding: 28px; border: 1px solid #e1e7ed; color: #68778a; text-align: center; }
+  @media (max-width: 560px) {
+    .staff-reports-page { width: calc(100% - 28px); }
+    .staff-report { grid-template-columns: minmax(0, 1fr); }
+    .staff-report p { grid-column: 1; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="staff-reports-page">
+  <h1>住民からの災害通報</h1>
+  <p class="staff-intro">この画面は職員専用です。通報者情報は公開されません。</p>
+  {% if error %}<p role="alert">通報情報を現在取得できません。</p>
+  {% elif reports %}
+  <div class="staff-report-list">
+    {% for report in reports %}
+    <article class="staff-report">
+      <time>{{ report.reported_at }}</time>
+      <strong>{{ report.category }}：{{ report.place }}</strong>
+      <span>通報者：{{ report.reporter }}</span>
+      <p>{{ report.comment }}</p>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="staff-empty">通報はありません。</p>
+  {% endif %}
+</div>
+{% endblock %}

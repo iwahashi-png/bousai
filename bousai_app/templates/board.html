@@ -1,25 +1,259 @@
 {% extends "base.html" %}
 
-{% block title %}指示・発信ボード - 防災アプリ{% endblock %}
+{% block title %}避難指示・発信ボード | 防災アプリ{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+  .evacuation-board { width: min(1080px, calc(100% - 36px)); margin: 28px auto 56px; }
+  .board-heading { margin-bottom: 24px; }
+  .board-heading h1 { margin: 0 0 6px; color: #26364a; font-size: 25px; }
+  .board-heading p { margin: 0; color: #68778a; font-size: 13px; }
+  .board-section { padding: 20px 0; border-top: 1px solid #dce3eb; }
+  .board-section h2 { margin: 0 0 15px; color: #35465b; font-size: 17px; }
+
+  .area-list { display: grid; gap: 12px; }
+  .area-row { display: grid; grid-template-columns: 185px minmax(0, 1fr); align-items: start; gap: 14px; }
+  .choice-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .choice-button { min-height: 43px; padding: 9px 12px; border: 1px solid #c4cbd3; border-radius: 5px; background: #e7e9ec; color: #303b48; font: inherit; font-size: 13px; font-weight: 600; line-height: 1.4; text-align: center; cursor: pointer; transition: background-color 120ms ease, color 120ms ease; }
+  .choice-button:hover { border-color: #7893b2; }
+  .choice-button:focus-visible { outline: 3px solid #86b8e9; outline-offset: 2px; }
+  .choice-button[aria-pressed="true"] { border-color: #2857a4; background: #2857a4; color: #fff; }
+  .shelter-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .shelter-button { min-height: 43px; overflow-wrap: anywhere; }
+
+  .board-error { margin: 0 0 16px; padding: 11px 14px; border-left: 4px solid #b34e43; background: #fff3f1; color: #8e372f; font-size: 13px; }
+  .board-error ul { margin: 0; padding-left: 20px; }
+  .instruction-context { margin: 0 0 18px; padding: 12px 14px; border-left: 4px solid #d5a33d; background: #fff8e8; color: #554821; font-size: 13px; line-height: 1.6; }
+  .instruction-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .instruction-field { display: grid; gap: 6px; }
+  .instruction-field label { color: #35465b; font-size: 12px; font-weight: 700; }
+  .instruction-field select, .instruction-field input { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid #c4cbd3; border-radius: 5px; background: #fff; color: #303b48; font: inherit; font-size: 13px; }
+  .instruction-field select:focus-visible, .instruction-field input:focus-visible { outline: 3px solid #86b8e9; outline-offset: 2px; }
+  .update-instructions { display: flex; justify-content: flex-end; margin-top: 18px; }
+  .update-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 18px; border: 1px solid #2857a4; border-radius: 5px; background: #2857a4; color: #fff; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .update-button:hover { background: #204986; }
+  .update-button:focus-visible, .revoke-button:focus-visible { outline: 3px solid #86b8e9; outline-offset: 2px; }
+
+  .history-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .history-event { display: grid; grid-template-columns: 105px minmax(0, 1fr) auto; align-items: start; gap: 9px 14px; padding: 14px; border: 1px solid #e0e5eb; border-radius: 5px; background: #fff; }
+  .event-action { display: inline-flex; align-items: center; justify-content: center; min-height: 25px; padding: 0 8px; border-radius: 4px; background: #eaf3ed; color: #286343; font-size: 11px; font-weight: 700; }
+  .event-action.is-revoked { background: #f0f1f3; color: #647487; }
+  .event-region { margin: 0 0 4px; color: #35465b; font-size: 14px; font-weight: 700; }
+  .event-shelters { margin: 0; color: #5e6e80; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+  .event-meta { display: grid; justify-items: end; gap: 5px; color: #788697; font-size: 11px; text-align: right; }
+  .event-meta p { margin: 0; }
+  .revoke-form { grid-column: 2 / 4; justify-self: end; }
+  .revoke-button { min-height: 34px; padding: 0 10px; border: 1px solid #b9c4cf; border-radius: 4px; background: #fff; color: #536579; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .revoke-button:hover { border-color: #a1463c; background: #fff5f3; color: #8e372f; }
+  .history-empty { margin: 0; padding: 22px 14px; border: 1px solid #e1e7ed; color: #788697; font-size: 13px; text-align: center; }
+  .board-flash { margin: 0 0 15px; padding: 11px 14px; border-left: 4px solid #38935c; background: #edf8f1; color: #2b6945; font-size: 13px; }
+
+  @media (max-width: 720px) {
+    .evacuation-board { width: calc(100% - 28px); margin-top: 22px; }
+    .board-heading h1 { font-size: 22px; }
+    .area-row { grid-template-columns: 120px minmax(0, 1fr); gap: 9px; }
+    .shelter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .instruction-fields { grid-template-columns: minmax(0, 1fr); }
+    .choice-button { padding: 8px 7px; font-size: 12px; }
+    .history-event { grid-template-columns: 82px minmax(0, 1fr); gap: 8px 10px; }
+    .event-meta { grid-column: 2; justify-items: start; text-align: left; }
+    .revoke-form { grid-column: 2; justify-self: start; }
+  }
+
+  @media (max-width: 430px) {
+    .area-row { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+    .area-button { text-align: left; }
+    .shelter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .update-instructions, .update-button { width: 100%; }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<h2>発信ボード</h2>
-<p>住民向けの発信を登録・確認できます。</p>
+<div class="evacuation-board">
+  <header class="board-heading">
+    <h1>避難指示・発信ボード</h1>
+    <p>新規発信する地域と、その地域で確保できた避難先を選択してください。</p>
+  </header>
 
-<!-- 発信一覧 -->
-<h3>発信一覧</h3>
-{% if instructions %}
-<table border="1" cellpadding="5">
-  <tr>
-    <th>内容</th>
-  </tr>
-  {% for inst in instructions %}
-  <tr>
-    <td>{{ inst.content }}{% if inst.shelter %}（避難先: {{ inst.shelter }}）{% endif %}</td>
-  </tr>
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+  <p class="board-flash" role="status">{{ message }}</p>
   {% endfor %}
-</table>
-{% else %}
-<p>登録されている指示はありません。</p>
-{% endif %}
+  {% if errors %}
+  <div class="board-error" role="alert"><ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul></div>
+  {% endif %}
+  {% if weather_error %}
+  <p class="board-error" role="alert">気象庁情報を確認できません。警報・注意報の一覧へ戻って再度選択してください。</p>
+  {% elif weather_notice %}
+  <aside class="instruction-context"><strong>{{ weather_notice.area_name }}・{{ weather_notice.name }}（{{ weather_notice.status }}）</strong><br>発表時刻: {{ weather_notice.report_time }}</aside>
+  {% endif %}
+
+  <section class="board-section" aria-labelledby="new-instruction-title">
+    <h2 id="new-instruction-title">新規発信</h2>
+    <form id="evacuation-form" method="post" action="{{ url_for('board') }}" data-has-server-draft="{{ 'true' if has_server_draft else 'false' }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="weather_code" value="{{ weather_code }}">
+      <div class="instruction-fields">
+        <div class="instruction-field">
+          <label for="instruction-reason">指示の理由</label>
+          <select id="instruction-reason" name="reason" required>
+            <option value="">理由を選択してください</option>
+            {% for reason in instruction_reasons %}
+            <option value="{{ reason }}" {% if selected_reason == reason %}selected{% endif %}>{{ reason }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="instruction-field">
+          <label for="reason-details">理由の補足</label>
+          <input id="reason-details" name="reason_details" type="text" maxlength="500" value="{{ reason_details }}" placeholder="必要な場合に入力">
+        </div>
+        <div class="instruction-field">
+          <label for="period-start">発令開始</label>
+          <input id="period-start" name="period_start" type="datetime-local" required value="{{ period_start }}">
+        </div>
+        <div class="instruction-field">
+          <label for="period-end">発令終了</label>
+          <input id="period-end" name="period_end" type="datetime-local" required value="{{ period_end }}">
+        </div>
+      </div>
+      <div class="area-list">
+        {% for area in evacuation_areas %}
+        {% set area_loop_index = loop.index %}
+        <div class="area-row" data-area-id="{{ area.id }}">
+          {% set area_selected = area.id in selected_regions %}
+          {% set region_input_id = 'region-' ~ area_loop_index %}
+          <input class="choice-input region-input" id="{{ region_input_id }}" type="checkbox" name="region_ids" value="{{ area.id }}" {% if area_selected %}checked{% endif %} aria-hidden="true" tabindex="-1">
+          <button class="choice-button area-button" type="button" data-choice="region" data-input-id="{{ region_input_id }}" aria-pressed="{{ 'true' if area_selected else 'false' }}">{{ area.name }}</button>
+          <div class="shelter-grid" aria-label="{{ area.name }}の避難先">
+            {% for shelter in area.shelters %}
+            {% set shelter_selected = shelter.id in selected_shelters %}
+            {% set shelter_input_id = 'shelter-' ~ area_loop_index ~ '-' ~ loop.index %}
+            <input class="choice-input shelter-input" id="{{ shelter_input_id }}" type="checkbox" name="shelter_ids" value="{{ shelter.id }}" data-area-id="{{ area.id }}" {% if shelter_selected %}checked{% endif %} aria-hidden="true" tabindex="-1">
+            <button class="choice-button shelter-button" type="button" data-choice="shelter" data-input-id="{{ shelter_input_id }}" data-area-id="{{ area.id }}" data-region-input-id="{{ region_input_id }}" aria-pressed="{{ 'true' if shelter_selected else 'false' }}">{{ shelter.name }}</button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="update-instructions">
+        <button class="update-button" type="submit"><i class="fa-solid fa-bullhorn" aria-hidden="true"></i>指示を更新する</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="board-section" aria-labelledby="instruction-history-title">
+    <h2 id="instruction-history-title">履歴</h2>
+    {% if history_events %}
+    <ol class="history-list">
+      {% for event in history_events %}
+      <li class="history-event">
+        <span class="event-action{% if event.action == '解除' %} is-revoked{% endif %}">{{ event.action }}</span>
+        <div>
+          <p class="event-region">{{ event.region_name or '未登録' }}</p>
+          <p class="event-shelters">避難先: {{ event.shelters|join('、') if event.shelters else '未登録' }}</p>
+        </div>
+        <div class="event-meta">
+          <p>{{ event.timestamp_display or event.timestamp or '時刻未記録' }}</p>
+          <p>担当: {{ event.operator or '未登録' }}</p>
+          <p>理由: {{ event.reason or '未登録' }}{% if event.reason_details %}（{{ event.reason_details }}）{% endif %}</p>
+          {% if event.action == '追加' %}<p>期間: {{ event.issue_start_display }} ～ {{ event.issue_end_display }}</p>{% endif %}
+          <p>{{ event.instruction_status }}</p>
+        </div>
+        {% if event.action == '追加' and event.instruction_status in ('発令中', '発令予定') %}
+        <form class="revoke-form" method="post" action="{{ url_for('revoke_evacuation_instruction', instruction_id=event.instruction_id) }}" onsubmit="return window.confirm('この地域の避難指示を解除します。よろしいですか？');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="confirm_revoke" value="yes">
+          <button class="revoke-button" type="submit" aria-label="{{ event.region_name }}の避難指示を解除／取消">{% if event.instruction_status == '発令予定' %}予定を取り消す{% else %}指示を解除{% endif %}</button>
+        </form>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p class="history-empty">発信・解除の履歴はありません。</p>
+    {% endif %}
+  </section>
+</div>
+<script>
+  (() => {
+    const form = document.querySelector('#evacuation-form');
+    const regionButtons = [...form.querySelectorAll('[data-choice="region"]')];
+    const shelterButtons = [...form.querySelectorAll('[data-choice="shelter"]')];
+    const storageKey = 'evacuation-board-draft-v1';
+
+    function setButton(button, selected) {
+      const input = document.getElementById(button.dataset.inputId);
+      input.checked = selected;
+      button.setAttribute('aria-pressed', String(selected));
+    }
+
+    function currentDraft() {
+      return {
+        region_ids: regionButtons.filter(button => document.getElementById(button.dataset.inputId).checked).map(button => document.getElementById(button.dataset.inputId).value),
+        shelter_ids: shelterButtons.filter(button => document.getElementById(button.dataset.inputId).checked).map(button => document.getElementById(button.dataset.inputId).value)
+      };
+    }
+
+    function persistDraft() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(currentDraft()));
+      } catch (_error) {
+        // The form remains usable when browser storage is unavailable.
+      }
+    }
+
+    function applyDraft(draft) {
+      const regionIds = new Set(Array.isArray(draft.region_ids) ? draft.region_ids : []);
+      const shelterIds = new Set(Array.isArray(draft.shelter_ids) ? draft.shelter_ids : []);
+      regionButtons.forEach(button => {
+        const input = document.getElementById(button.dataset.inputId);
+        setButton(button, regionIds.has(input.value));
+      });
+      shelterButtons.forEach(button => {
+        const input = document.getElementById(button.dataset.inputId);
+        setButton(button, shelterIds.has(input.value));
+      });
+    }
+
+    if (form.dataset.hasServerDraft === 'true') {
+      persistDraft();
+    } else {
+      try {
+        const savedDraft = JSON.parse(localStorage.getItem(storageKey) || 'null');
+        if (savedDraft) applyDraft(savedDraft);
+      } catch (_error) {
+        localStorage.removeItem(storageKey);
+      }
+    }
+
+    regionButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.inputId);
+        const selected = !input.checked;
+        setButton(button, selected);
+        if (!selected) {
+          shelterButtons.filter(shelter => shelter.dataset.areaId === input.value).forEach(shelter => setButton(shelter, false));
+        }
+        persistDraft();
+      });
+    });
+
+    shelterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const input = document.getElementById(button.dataset.inputId);
+        const selecting = !input.checked;
+        setButton(button, selecting);
+        if (selecting) {
+          const regionInput = document.getElementById(button.dataset.regionInputId);
+          const regionButton = regionButtons.find(item => item.dataset.inputId === button.dataset.regionInputId);
+          if (regionInput && regionButton) setButton(regionButton, true);
+        }
+        persistDraft();
+      });
+    });
+
+    form.addEventListener('submit', persistDraft);
+  })();
+</script>
 {% endblock %}

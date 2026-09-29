@@ -51,6 +51,7 @@
     </div>
     {% if error %}<p class="mock-error" role="alert">{{ error }}</p>{% endif %}
     <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="code" value="{{ notice.code }}">
       <input type="hidden" name="name" value="{{ notice.name }}">
       <input type="hidden" name="warning_status" value="{{ notice.warning_status }}">
