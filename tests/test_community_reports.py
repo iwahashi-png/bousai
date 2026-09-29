@@ -167,6 +167,26 @@ class CommunityReportTests(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertFalse(database_path.exists())
 
+    def test_login_uses_temporary_default_credentials(self):
+        login_html = self.client.get('/login').get_data(as_text=True)
+        self.assertIn('name="csrf_token"', login_html)
+        with self.client.session_transaction() as session:
+            token = session['_csrf_token']
+
+        with patch.dict(os.environ, {'STAFF_USERNAME': '', 'STAFF_PASSWORD': ''}):
+            response = self.client.post('/login', data={
+                'csrf_token': token,
+                'username': '000',
+                'password': 'password',
+                'next': '/board'
+            })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.headers['Location'].endswith('/board'))
+        with self.client.session_transaction() as session:
+            self.assertTrue(session['logged_in'])
+            self.assertEqual(session['username'], '000')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -62,6 +62,41 @@ class EvacuationBoardTests(unittest.TestCase):
         self.assertNotIn('発信一覧', html)
         self.assertNotIn('<table', html)
 
+    def test_home_shows_only_active_resident_evacuation_instructions(self):
+        now = datetime.now(app_module.JST)
+        app_module.instructions = [
+            {
+                'id': 'active', 'type': 'evacuation', 'target': '住民',
+                'region_name': '発令中の区', 'content': '発令中の指示',
+                'issue_start_at': (now - timedelta(minutes=5)).isoformat(),
+                'issue_end_at': (now + timedelta(hours=1)).isoformat()
+            },
+            {
+                'id': 'planned', 'type': 'evacuation', 'target': '住民',
+                'region_name': '発令予定の区', 'content': '発令予定の指示',
+                'issue_start_at': (now + timedelta(hours=1)).isoformat(),
+                'issue_end_at': (now + timedelta(hours=2)).isoformat()
+            },
+            {
+                'id': 'revoked', 'type': 'evacuation', 'target': '住民',
+                'region_name': '解除済みの区', 'content': '解除済みの指示',
+                'status': '解除済み',
+                'issue_start_at': (now - timedelta(hours=1)).isoformat(),
+                'issue_end_at': (now + timedelta(hours=1)).isoformat()
+            },
+            {
+                'id': 'notice', 'target': '住民',
+                'region_name': '通常のお知らせ', 'content': '通常のお知らせ内容'
+            }
+        ]
+
+        html = self.client.get('/').get_data(as_text=True)
+
+        self.assertIn('発令中の指示', html)
+        self.assertNotIn('発令予定の指示', html)
+        self.assertNotIn('解除済みの指示', html)
+        self.assertNotIn('通常のお知らせ内容', html)
+
     def test_incomplete_or_cross_region_selection_does_not_save(self):
         response = self.post_board([self.areas[0]['id']], [])
         self.assertEqual(response.status_code, 400)
@@ -91,7 +126,7 @@ class EvacuationBoardTests(unittest.TestCase):
         self.assertIn('理由を選択', response.get_data(as_text=True))
         self.assertFalse(self.instructions_path.exists())
 
-    def test_multiple_regions_save_matching_shelters_and_preserve_selection(self):
+    def test_multiple_regions_save_matching_shelters_and_clear_selection_after_update(self):
         selected_regions = [self.areas[0], self.areas[1]]
         selected_shelters = [
             selected_regions[0]['shelters'][0],
@@ -122,7 +157,8 @@ class EvacuationBoardTests(unittest.TestCase):
             self.assertEqual(directive['history'][0]['operator'], 'staff-test')
 
         refreshed = self.client.get('/board').get_data(as_text=True)
-        self.assertIn('aria-pressed="true"', refreshed)
+        self.assertNotIn('aria-pressed="true">', refreshed)
+        self.assertIn('aria-pressed="false"', refreshed)
         self.assertNotIn('発信一覧', refreshed)
 
     def test_jma_instruction_reason_requires_current_official_notice(self):
@@ -178,7 +214,7 @@ class EvacuationBoardTests(unittest.TestCase):
         self.assertNotIn('指示を解除', history_page)
         resident_page = self.client.get('/').get_data(as_text=True)
         self.assertNotIn(revoked['content'], resident_page)
-        self.assertIn('既存のお知らせ', resident_page)
+        self.assertNotIn('既存のお知らせ', resident_page)
 
     def test_revoke_requires_csrf_and_confirmation(self):
         area = self.areas[0]

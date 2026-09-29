@@ -166,5 +166,276 @@
     ],
     "revoked_at": "2026年09月29日 15:15",
     "revoked_at_iso": "2026-09-29T15:15:11+09:00"
+  },
+  {
+    "id": "8e0a5d27d868d496f863870f",
+    "type": "evacuation",
+    "target": "住民",
+    "region_id": "aomori-central",
+    "region_name": "青森市中央区",
+    "shelter_ids": [
+      "1"
+    ],
+    "shelters": [
+      "御所見小学校"
+    ],
+    "reason": "土砂災害",
+    "reason_details": "",
+    "source": "職員作成",
+    "weather_code": null,
+    "issue_start_at": "2026-09-29T15:54:00+09:00",
+    "issue_end_at": "2026-09-30T15:54:00+09:00",
+    "issue_start_display": "2026年09月29日 15:54",
+    "issue_end_display": "2026年09月30日 15:54",
+    "content": "【土砂災害】青森市中央区の住民は、御所見小学校へ避難してください。",
+    "status": "解除済み",
+    "created_at": "2026年09月29日 15:55",
+    "created_at_iso": "2026-09-29T15:55:17+09:00",
+    "created_by": "000",
+    "history": [
+      {
+        "action": "追加",
+        "region_id": "aomori-central",
+        "region_name": "青森市中央区",
+        "shelters": [
+          "御所見小学校"
+        ],
+        "reason": "土砂災害",
+        "reason_details": "",
+        "issue_start_at": "2026-09-29T15:54:00+09:00",
+        "issue_end_at": "2026-09-30T15:54:00+09:00",
+        "issue_start_display": "2026年09月29日 15:54",
+        "issue_end_display": "2026年09月30日 15:54",
+        "timestamp": "2026-09-29T15:55:17+09:00",
+        "timestamp_display": "2026年09月29日 15:55",
+        "operator": "000"
+      },
+      {
+        "action": "解除",
+        "region_id": "aomori-central",
+        "region_name": "青森市中央区",
+        "shelters": [
+          "御所見小学校"
+        ],
+        "timestamp": "2026-09-29T16:04:28+09:00",
+        "timestamp_display": "2026年09月29日 16:04",
+        "operator": "000"
+      }
+    ],
+    "revoked_at": "2026年09月29日 16:04",
+    "revoked_at_iso": "2026-09-29T16:04:28+09:00"
+  },
+  {
+    "id": "ebb64b87cd7d8cbf83433384",
+    "type": "evacuation",
+    "target": "住民",
+    "region_id": "aomori-central",
+    "region_name": "青森市中央区",
+    "shelter_ids": [
+      "1"
+    ],
+    "shelters": [
+      "御所見小学校"
+    ],
+    "reason": "津波",
+    "reason_details": "",
+    "source": "職員作成",
+    "weather_code": null,
+    "issue_start_at": "2026-09-29T15:58:00+09:00",
+    "issue_end_at": "2026-09-30T15:58:00+09:00",
+    "issue_start_display": "2026年09月29日 15:58",
+    "issue_end_display": "2026年09月30日 15:58",
+    "content": "【津波】青森市中央区の住民は、御所見小学校へ避難してください。",
+    "status": "解除済み",
+    "created_at": "2026年09月29日 15:58",
+    "created_at_iso": "2026-09-29T15:58:33+09:00",
+    "created_by": "000",
+    "history": [
+      {
+        "action": "追加",
+        "region_id": "aomori-central",
+        "region_name": "青森市中央区",
+        "shelters": [
+          "御所見小学校"
+        ],
+        "reason": "津波",
+        "reason_details": "",
+        "issue_start_at": "2026-09-29T15:58:00+09:00",
+        "issue_end_at": "2026-09-30T15:58:00+09:00",
+        "issue_start_display": "2026年09月29日 15:58",
+        "issue_end_display": "2026年09月30日 15:58",
+        "timestamp": "2026-09-29T15:58:33+09:00",
+        "timestamp_display": "2026年09月29日 15:58",
+        "operator": "000"
+      },
+      {
+        "action": "解除",
+        "region_id": "aomori-central",
+        "region_name": "青森市中央区",
+        "shelters": [
+          "御所見小学校"
+        ],
+        "timestamp": "2026-09-29T16:04:21+09:00",
+        "timestamp_display": "2026年09月29日 16:04",
+        "operator": "000"
+      }
+    ],
+    "revoked_at": "2026年09月29日 16:04",
+    "revoked_at_iso": "2026-09-29T16:04:21+09:00"
+  },
+  {
+    "id": "fa7ad744b6d0c1605c0d12f6",
+    "type": "evacuation",
+    "target": "住民",
+    "region_id": "aomori-east",
+    "region_name": "青森市東区",
+    "shelter_ids": [
+      "aomori-east-shelter-1",
+      "aomori-east-shelter-2"
+    ],
+    "shelters": [
+      "青森市立東小学校",
+      "青森市立幸畑小学校"
+    ],
+    "reason": "津波",
+    "reason_details": "",
+    "source": "職員作成",
+    "weather_code": null,
+    "issue_start_at": "2026-09-29T15:58:00+09:00",
+    "issue_end_at": "2026-09-30T15:58:00+09:00",
+    "issue_start_display": "2026年09月29日 15:58",
+    "issue_end_display": "2026年09月30日 15:58",
+    "content": "【津波】青森市東区の住民は、青森市立東小学校、青森市立幸畑小学校へ避難してください。",
+    "status": "解除済み",
+    "created_at": "2026年09月29日 15:58",
+    "created_at_iso": "2026-09-29T15:58:33+09:00",
+    "created_by": "000",
+    "history": [
+      {
+        "action": "追加",
+        "region_id": "aomori-east",
+        "region_name": "青森市東区",
+        "shelters": [
+          "青森市立東小学校",
+          "青森市立幸畑小学校"
+        ],
+        "reason": "津波",
+        "reason_details": "",
+        "issue_start_at": "2026-09-29T15:58:00+09:00",
+        "issue_end_at": "2026-09-30T15:58:00+09:00",
+        "issue_start_display": "2026年09月29日 15:58",
+        "issue_end_display": "2026年09月30日 15:58",
+        "timestamp": "2026-09-29T15:58:33+09:00",
+        "timestamp_display": "2026年09月29日 15:58",
+        "operator": "000"
+      },
+      {
+        "action": "解除",
+        "region_id": "aomori-east",
+        "region_name": "青森市東区",
+        "shelters": [
+          "青森市立東小学校",
+          "青森市立幸畑小学校"
+        ],
+        "timestamp": "2026-09-29T16:04:25+09:00",
+        "timestamp_display": "2026年09月29日 16:04",
+        "operator": "000"
+      }
+    ],
+    "revoked_at": "2026年09月29日 16:04",
+    "revoked_at_iso": "2026-09-29T16:04:25+09:00"
+  },
+  {
+    "id": "afca9dc3b4914a14ea25d5b4",
+    "type": "evacuation",
+    "target": "住民",
+    "region_id": "aomori-central",
+    "region_name": "青森市中央区",
+    "shelter_ids": [
+      "1",
+      "2"
+    ],
+    "shelters": [
+      "御所見小学校",
+      "片瀬小学校"
+    ],
+    "reason": "津波",
+    "reason_details": "",
+    "source": "職員作成",
+    "weather_code": null,
+    "issue_start_at": "2026-09-29T16:17:00+09:00",
+    "issue_end_at": "2026-09-30T16:17:00+09:00",
+    "issue_start_display": "2026年09月29日 16:17",
+    "issue_end_display": "2026年09月30日 16:17",
+    "content": "【津波】青森市中央区の住民は、御所見小学校、片瀬小学校へ避難してください。",
+    "status": "発令中",
+    "created_at": "2026年09月29日 16:17",
+    "created_at_iso": "2026-09-29T16:17:35+09:00",
+    "created_by": "000",
+    "history": [
+      {
+        "action": "追加",
+        "region_id": "aomori-central",
+        "region_name": "青森市中央区",
+        "shelters": [
+          "御所見小学校",
+          "片瀬小学校"
+        ],
+        "reason": "津波",
+        "reason_details": "",
+        "issue_start_at": "2026-09-29T16:17:00+09:00",
+        "issue_end_at": "2026-09-30T16:17:00+09:00",
+        "issue_start_display": "2026年09月29日 16:17",
+        "issue_end_display": "2026年09月30日 16:17",
+        "timestamp": "2026-09-29T16:17:35+09:00",
+        "timestamp_display": "2026年09月29日 16:17",
+        "operator": "000"
+      }
+    ]
+  },
+  {
+    "id": "54fb67d5693dae81cf455bae",
+    "type": "evacuation",
+    "target": "住民",
+    "region_id": "aomori-west",
+    "region_name": "青森市西区",
+    "shelter_ids": [
+      "aomori-west-shelter-1"
+    ],
+    "shelters": [
+      "青森市立西小学校"
+    ],
+    "reason": "津波",
+    "reason_details": "",
+    "source": "職員作成",
+    "weather_code": null,
+    "issue_start_at": "2026-09-29T16:17:00+09:00",
+    "issue_end_at": "2026-09-30T16:17:00+09:00",
+    "issue_start_display": "2026年09月29日 16:17",
+    "issue_end_display": "2026年09月30日 16:17",
+    "content": "【津波】青森市西区の住民は、青森市立西小学校へ避難してください。",
+    "status": "発令中",
+    "created_at": "2026年09月29日 16:17",
+    "created_at_iso": "2026-09-29T16:17:35+09:00",
+    "created_by": "000",
+    "history": [
+      {
+        "action": "追加",
+        "region_id": "aomori-west",
+        "region_name": "青森市西区",
+        "shelters": [
+          "青森市立西小学校"
+        ],
+        "reason": "津波",
+        "reason_details": "",
+        "issue_start_at": "2026-09-29T16:17:00+09:00",
+        "issue_end_at": "2026-09-30T16:17:00+09:00",
+        "issue_start_display": "2026年09月29日 16:17",
+        "issue_end_display": "2026年09月30日 16:17",
+        "timestamp": "2026-09-29T16:17:35+09:00",
+        "timestamp_display": "2026年09月29日 16:17",
+        "operator": "000"
+      }
+    ]
   }
 ]
